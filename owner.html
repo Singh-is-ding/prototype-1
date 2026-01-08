@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYM Owner Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel support -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --bg-hover: #1e1e1e;
+            --border: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .nav-menu { list-style: none; flex: 1; }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-hover);
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        .nav-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title { font-size: 1.5rem; font-weight: 700; }
+        .page-subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
+
+        /* Section Views */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 2rem; font-weight: 700; }
+        .stat-value.success { color: var(--success); }
+        .stat-value.danger { color: var(--danger); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.accent { color: var(--accent); }
+
+        /* Tables */
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .table-title { font-size: 1rem; font-weight: 600; }
+
+        .table-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover { background: var(--bg-hover); }
+        tr:last-child td { border-bottom: none; }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { opacity: 0.9; }
+
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { opacity: 0.9; }
+
+        .btn-secondary { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--text-muted); }
+
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus { border-color: var(--accent); }
+        .form-input::placeholder { color: var(--text-muted); }
+
+        .search-input {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            outline: none;
+            width: 200px;
+        }
+
+        .search-input:focus { border-color: var(--accent); }
+
+        /* Status Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-active { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .badge-paused { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge-left { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .badge-paid { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .badge-unpaid { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .badge-present { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .badge-absent { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title { font-size: 1.2rem; font-weight: 600; }
+
+        .modal-close {
+            width: 32px; height: 32px;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .modal-close:hover { color: var(--danger); border-color: var(--danger); }
+        .modal-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-label { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .tab:hover { color: var(--text-primary); }
+        .tab.active { background: var(--accent); color: white; }
+
+        /* Excel Section */
+        .excel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .excel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .excel-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .excel-card-title svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 2; }
+
+        .excel-card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .excel-options { display: flex; flex-direction: column; gap: 10px; }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0; top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%; height: 100%;
+        }
+
+        /* Settings */
+        .settings-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .settings-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-row:last-child { border-bottom: none; }
+
+        .settings-label { font-size: 0.9rem; }
+        .settings-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+        .toggle {
+            width: 48px; height: 26px;
+            background: var(--border);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle.active { background: var(--accent); }
+
+        .toggle::after {
+            content: '';
+            width: 22px; height: 22px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px; left: 2px;
+            transition: left 0.2s;
+        }
+
+        .toggle.active::after { left: 24px; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast-icon { font-size: 1.2rem; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-btn { display: flex !important; }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px; left: 20px;
+            width: 40px; height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 101;
+        }
+
+        .mobile-menu-btn svg { width: 24px; height: 24px; stroke: var(--text-primary); fill: none; stroke-width: 2; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon { font-size: 3rem; margin-bottom: 16px; }
+        .empty-state-text { font-size: 1rem; margin-bottom: 8px; }
+        .empty-state-sub { font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">GYM ADMIN</div>
+            <div class="sidebar-subtitle">Owner Control Panel</div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" data-section="dashboard">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </li>
+            <li class="nav-item" data-section="members">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Members
+            </li>
+            <li class="nav-item" data-section="attendance">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Attendance
+            </li>
+            <li class="nav-item" data-section="fees">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Fees
+            </li>
+            <li class="nav-item" data-section="excel">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Excel
+            </li>
+            <li class="nav-item" data-section="reports">
+                <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                Reports
+            </li>
+            <li class="nav-item" data-section="settings">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            © 2025 GYM Admin Panel
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+        <!-- DASHBOARD SECTION -->
+        <section class="section active" id="dashboardSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Overview of gym operations</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Members</div>
+                    <div class="stat-value accent" id="totalMembers">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Today's Present</div>
+                    <div class="stat-value success" id="todayPresent">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Today's Absent</div>
+                    <div class="stat-value danger" id="todayAbsent">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Monthly Attendance %</div>
+                    <div class="stat-value warning" id="monthlyPercent">0%</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Active Members</div>
+                    <div class="stat-value success" id="activeMembers">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Paused Members</div>
+                    <div class="stat-value warning" id="pausedMembers">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fees Pending</div>
+                    <div class="stat-value danger" id="feesPending">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fees Collected (Month)</div>
+                    <div class="stat-value success" id="feesCollected">₹0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEMBERS SECTION -->
+        <section class="section" id="membersSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Members Management</h1>
+                    <p class="page-subtitle">Manage gym members</p>
+                </div>
+                <button class="btn btn-primary" onclick="openMemberModal()">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Member
+                </button>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">All Members</div>
+                    <div class="table-actions">
+                        <input type="text" class="search-input" placeholder="Search members..." id="memberSearch" oninput="filterMembers()">
+                        <select class="form-select" style="width: auto;" id="memberStatusFilter" onchange="filterMembers()">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="paused">Paused</option>
+                            <option value="left">Left</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Power ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ATTENDANCE SECTION -->
+        <section class="section" id="attendanceSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Attendance Management</h1>
+                    <p class="page-subtitle">View and edit member attendance</p>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Date:</label>
+                    <input type="date" class="form-input" style="width: auto;" id="attendanceDate" onchange="loadAttendance()">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">View:</label>
+                    <select class="form-select" style="width: auto;" id="attendanceView" onchange="loadAttendance()">
+                        <option value="day">Day</option>
+                        <option value="week">Week</option>
+                        <option value="month">Month</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status:</label>
+                    <select class="form-select" style="width: auto;" id="attendanceFilter" onchange="filterAttendance()">
+                        <option value="all">All</option>
+                        <option value="present">Present Only</option>
+                        <option value="absent">Absent Only</option>
+                    </select>
+                </div>
+                <input type="text" class="search-input" placeholder="Search by name or ID..." id="attendanceSearch" oninput="filterAttendance()">
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title" id="attendanceTableTitle">Attendance - Today</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Power ID</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- FEES SECTION -->
+        <section class="section" id="feesSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Fees Management</h1>
+                    <p class="page-subtitle">Track member payments</p>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Status:</label>
+                    <select class="form-select" style="width: auto;" id="feeStatusFilter" onchange="filterFees()">
+                        <option value="all">All</option>
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                    </select>
+                </div>
+                <input type="text" class="search-input" placeholder="Search..." id="feeSearch" oninput="filterFees()">
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Fee Records</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Power ID</th>
+                            <th>Name</th>
+                            <th>Monthly Fee</th>
+                            <th>Status</th>
+                            <th>Last Payment</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feesTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- EXCEL SECTION -->
+        <section class="section" id="excelSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Excel Import & Export</h1>
+                    <p class="page-subtitle">Manage data with Excel files</p>
+                </div>
+            </div>
+
+            <div class="excel-grid">
+                <!-- Import Section -->
+                <div class="excel-card">
+                    <div class="excel-card-title">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Import Data
+                    </div>
+                    <div class="excel-card-desc">Import members, attendance, or fee records from Excel files (.xlsx)</div>
+                    <div class="excel-options">
+                        <div class="file-input-wrapper">
+                            <button class="btn btn-secondary" style="width: 100%;">
+                                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                                Import Members
+                            </button>
+                            <input type="file" accept=".xlsx,.xls" onchange="importExcel('members', this)">
+                        </div>
+                        <div class="file-input-wrapper">
+                            <button class="btn btn-secondary" style="width: 100%;">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                                Import Attendance
+                            </button>
+                            <input type="file" accept=".xlsx,.xls" onchange="importExcel('attendance', this)">
+                        </div>
+                        <div class="file-input-wrapper">
+                            <button class="btn btn-secondary" style="width: 100%;">
+                                <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                Import Fees
+                            </button>
+                            <input type="file" accept=".xlsx,.xls" onchange="importExcel('fees', this)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Section -->
+                <div class="excel-card">
+                    <div class="excel-card-title">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Export Data
+                    </div>
+                    <div class="excel-card-desc">Export data to Excel files for backup or analysis</div>
+                    <div class="excel-options">
+                        <button class="btn btn-primary" onclick="exportExcel('members')">
+                            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                            Export All Members
+                        </button>
+                        <button class="btn btn-primary" onclick="exportExcel('daily-attendance')">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+                            Export Daily Attendance
+                        </button>
+                        <button class="btn btn-primary" onclick="exportExcel('monthly-attendance')">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+                            Export Monthly Attendance
+                        </button>
+                        <button class="btn btn-primary" onclick="exportExcel('fees-pending')">
+                            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/></svg>
+                            Export Fees Pending List
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REPORTS SECTION -->
+        <section class="section" id="reportsSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Reports</h1>
+                    <p class="page-subtitle">Generate and view reports</p>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchReportTab('attendance')">Attendance Report</div>
+                <div class="tab" onclick="switchReportTab('fees')">Fees Report</div>
+            </div>
+
+            <div id="attendanceReportTab">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label class="filter-label">Month:</label>
+                        <input type="month" class="form-input" style="width: auto;" id="reportMonth" onchange="generateAttendanceReport()">
+                    </div>
+                    <button class="btn btn-primary" onclick="exportExcel('monthly-report')">Export to Excel</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Monthly Attendance Report</div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Power ID</th>
+                                <th>Name</th>
+                                <th>Present Days</th>
+                                <th>Absent Days</th>
+                                <th>Attendance %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceReportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="feesReportTab" style="display: none;">
+                <div class="filter-bar">
+                    <button class="btn btn-primary" onclick="exportExcel('fees-report')">Export to Excel</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Fees Due Report</div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Power ID</th>
+                                <th>Name</th>
+                                <th>Monthly Fee</th>
+                                <th>Status</th>
+                                <th>Days Overdue</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feesReportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SETTINGS SECTION -->
+        <section class="section" id="settingsSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle">Configure gym settings</p>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">General Settings</div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Gym Name</div>
+                        <div class="settings-desc">Display name for your gym</div>
+                    </div>
+                    <input type="text" class="form-input" style="width: 250px;" id="gymName" value="TRANSFORMERS GYM">
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Default Monthly Fee</div>
+                        <div class="settings-desc">Default fee for new members</div>
+                    </div>
+                    <input type="number" class="form-input" style="width: 150px;" id="defaultFee" value="1000">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">Attendance Settings</div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Allow Past Day Edits (Owner)</div>
+                        <div class="settings-desc">Owner can edit attendance for past days</div>
+                    </div>
+                    <div class="toggle active" id="togglePastEdit" onclick="toggleSetting('pastEdit')"></div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Lock Attendance After Days</div>
+                        <div class="settings-desc">Lock attendance records after this many days</div>
+                    </div>
+                    <input type="number" class="form-input" style="width: 100px;" id="lockDays" value="7">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">Display Settings</div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Fullscreen / Kiosk Mode</div>
+                        <div class="settings-desc">Enable fullscreen mode for member check-in</div>
+                    </div>
+                    <div class="toggle" id="toggleKiosk" onclick="toggleSetting('kiosk')"></div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Auto-generate Power ID</div>
+                        <div class="settings-desc">Automatically generate Power ID for new members</div>
+                    </div>
+                    <div class="toggle active" id="toggleAutoId" onclick="toggleSetting('autoId')"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+        </section>
+
+    </main>
+
+    <!-- Add/Edit Member Modal -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="memberModalTitle">Add New Member</h3>
+                <button class="modal-close" onclick="closeModal('memberModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="memberForm">
+                <input type="hidden" id="memberId">
+                <div class="form-group">
+                    <label class="form-label">Power ID</label>
+                    <input type="text" class="form-input" id="memberPowerId" placeholder="Auto-generated or enter manually">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-input" id="memberName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-input" id="memberPhone">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="memberEmail">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="memberStatus">
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                        <option value="left">Left</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Fee</label>
+                    <input type="number" class="form-input" id="memberFee" value="1000">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Edit Modal -->
+    <div class="modal-overlay" id="attendanceModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Attendance</h3>
+                <button class="modal-close" onclick="closeModal('attendanceModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div id="attendanceModalContent">
+                <p style="margin-bottom: 16px; color: var(--text-secondary);">Confirm attendance change:</p>
+                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div id="attendanceEditDetails"></div>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--warning);">⚠️ This will edit a past attendance record.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('attendanceModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmAttendanceEdit()">Confirm Change</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fee Edit Modal -->
+    <div class="modal-overlay" id="feeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Update Fee Status</h3>
+                <button class="modal-close" onclick="closeModal('feeModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="feeForm">
+                <input type="hidden" id="feeMemberId">
+                <div class="form-group">
+                    <label class="form-label">Member</label>
+                    <input type="text" class="form-input" id="feeMemberName" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Fee</label>
+                    <input type="number" class="form-input" id="feeAmount">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="feeStatus">
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <input type="text" class="form-input" id="feeNotes">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('feeModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Fee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✓</span>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <script>
+        /**
+         * GYM OWNER ADMIN PANEL
+         * Complete management system with Firebase structure
+         * 
+         * NOTE: Firebase integration placeholders included.
+         * Replace with actual Firebase config for production.
+         */
+
+        // ============================================
+        // MOCK DATABASE (Replace with Firebase)
+        // ============================================
+        let DB = {
+            members: [
+                { id: '1', powerId: '001', name: 'ADITYA SHARMA', phone: '9876543210', email: 'aditya@email.com', status: 'active', fee: 1000, feePaid: true, lastPayment: '2025-01-01', joined: '2024-06-15', notes: '' },
+                { id: '2', powerId: '002', name: 'VAISHNAV KUMAR', phone: '9876543211', email: '', status: 'active', fee: 1200, feePaid: false, lastPayment: '2024-12-01', joined: '2024-07-20', notes: 'Payment pending' },
+                { id: '3', powerId: '003', name: 'AKSHAT SINGH', phone: '9876543212', email: '', status: 'paused', fee: 1000, feePaid: true, lastPayment: '2025-01-05', joined: '2024-08-10', notes: 'On vacation' },
+                { id: '4', powerId: '004', name: 'ADARSH VERMA', phone: '9876543213', email: '', status: 'active', fee: 1500, feePaid: true, lastPayment: '2025-01-03', joined: '2024-05-01', notes: '' },
+                { id: '5', powerId: '005', name: 'GEETA RANI', phone: '9876543214', email: '', status: 'active', fee: 1000, feePaid: false, lastPayment: '2024-11-15', joined: '2024-09-01', notes: '' },
+                { id: '6', powerId: '006', name: 'SURAJ YADAV', phone: '9876543215', email: '', status: 'active', fee: 1000, feePaid: true, lastPayment: '2025-01-02', joined: '2024-10-12', notes: '' },
+                { id: '7', powerId: '007', name: 'SAKSHI GUPTA', phone: '9876543216', email: '', status: 'left', fee: 1000, feePaid: true, lastPayment: '2024-10-01', joined: '2024-03-15', notes: 'Left gym' },
+                { id: '8', powerId: '008', name: 'SUMAN DEVI', phone: '9876543217', email: '', status: 'active', fee: 800, feePaid: true, lastPayment: '2025-01-04', joined: '2024-11-01', notes: '' },
+                { id: '9', powerId: '009', name: 'KASHISH MEHTA', phone: '9876543218', email: '', status: 'active', fee: 1000, feePaid: false, lastPayment: '2024-12-10', joined: '2024-04-20', notes: '' },
+                { id: '10', powerId: '010', name: 'SANVI PATEL', phone: '9876543219', email: '', status: 'active', fee: 1200, feePaid: true, lastPayment: '2025-01-06', joined: '2024-08-25', notes: '' }
+            ],
+            attendance: {},
+            settings: {
+                gymName: 'TRANSFORMERS GYM',
+                defaultFee: 1000,
+                pastEditEnabled: true,
+                lockDays: 7,
+                kioskMode: false,
+                autoId: true
+            }
+        };
+
+        // Generate attendance data for demo
+        function generateDemoAttendance() {
+            const today = new Date();
+            for (let d = 0; d < 30; d++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - d);
+                const dateStr = date.toISOString().split('T')[0];
+                DB.attendance[dateStr] = {};
+                DB.members.forEach(m => {
+                    if (m.status === 'active') {
+                        DB.attendance[dateStr][m.id] = {
+                            present: Math.random() > 0.3,
+                            time: '07:' + String(Math.floor(Math.random() * 60)).padStart(2, '0')
+                        };
+                    }
+                });
+            }
+        }
+        generateDemoAttendance();
+
+        // ============================================
+        // STATE
+        // ============================================
+        let currentSection = 'dashboard';
+        let pendingAttendanceEdit = null;
+
+        // ============================================
+        // NAVIGATION
+        // ============================================
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const section = item.dataset.section;
+                switchSection(section);
+            });
+        });
+
+        function switchSection(section) {
+            currentSection = section;
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section + 'Section').classList.add('active');
+
+            // Load section data
+            if (section === 'dashboard') loadDashboard();
+            else if (section === 'members') renderMembers();
+            else if (section === 'attendance') { initAttendanceDate(); loadAttendance(); }
+            else if (section === 'fees') renderFees();
+            else if (section === 'reports') { initReportMonth(); generateAttendanceReport(); generateFeesReport(); }
+            else if (section === 'settings') loadSettings();
+
+            // Close mobile sidebar
+            document.getElementById('sidebar').classList.remove('open');
+        }
+
+        // Mobile menu
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // ============================================
+        // DASHBOARD
+        // ============================================
+        function loadDashboard() {
+            const activeMembers = DB.members.filter(m => m.status === 'active');
+            const pausedMembers = DB.members.filter(m => m.status === 'paused');
+            const today = new Date().toISOString().split('T')[0];
+            const todayAttendance = DB.attendance[today] || {};
+
+            let presentCount = 0, absentCount = 0;
+            activeMembers.forEach(m => {
+                if (todayAttendance[m.id]?.present) presentCount++;
+                else absentCount++;
+            });
+
+            // Monthly attendance calculation
+            const thisMonth = new Date().toISOString().slice(0, 7);
+            let totalPresent = 0, totalDays = 0;
+            Object.keys(DB.attendance).forEach(date => {
+                if (date.startsWith(thisMonth)) {
+                    totalDays++;
+                    Object.values(DB.attendance[date]).forEach(a => { if (a.present) totalPresent++; });
+                }
+            });
+            const monthlyPercent = totalDays > 0 ? Math.round((totalPresent / (activeMembers.length * totalDays)) * 100) : 0;
+
+            const feesPending = DB.members.filter(m => m.status === 'active' && !m.feePaid).length;
+            const feesCollected = DB.members.filter(m => m.feePaid).reduce((sum, m) => sum + m.fee, 0);
+
+            document.getElementById('totalMembers').textContent = DB.members.length;
+            document.getElementById('todayPresent').textContent = presentCount;
+            document.getElementById('todayAbsent').textContent = absentCount;
+            document.getElementById('monthlyPercent').textContent = monthlyPercent + '%';
+            document.getElementById('activeMembers').textContent = activeMembers.length;
+            document.getElementById('pausedMembers').textContent = pausedMembers.length;
+            document.getElementById('feesPending').textContent = feesPending;
+            document.getElementById('feesCollected').textContent = '₹' + feesCollected.toLocaleString();
+        }
+
+        // ============================================
+        // MEMBERS MANAGEMENT
+        // ============================================
+        function renderMembers() {
+            const search = document.getElementById('memberSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('memberStatusFilter').value;
+
+            let filtered = DB.members.filter(m => {
+                const matchSearch = m.name.toLowerCase().includes(search) || m.powerId.includes(search);
+                const matchStatus = statusFilter === 'all' || m.status === statusFilter;
+                return matchSearch && matchStatus;
+            });
+
+            const tbody = document.getElementById('membersTableBody');
+            tbody.innerHTML = filtered.map(m => `
+                <tr>
+                    <td><strong>${m.powerId}</strong></td>
+                    <td>${m.name}</td>
+                    <td>${m.phone || '-'}</td>
+                    <td><span class="badge badge-${m.status}">${m.status.toUpperCase()}</span></td>
+                    <td>${formatDate(m.joined)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" onclick="editMember('${m.id}')">Edit</button>
+                        ${m.status === 'active' ? `<button class="btn btn-sm btn-secondary" onclick="pauseMember('${m.id}')">Pause</button>` : ''}
+                        ${m.status === 'paused' ? `<button class="btn btn-sm btn-success" onclick="activateMember('${m.id}')">Activate</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-text">No members found</div></td></tr>';
+            }
+        }
+
+        function filterMembers() { renderMembers(); }
+
+        function openMemberModal(id = null) {
+            document.getElementById('memberModalTitle').textContent = id ? 'Edit Member' : 'Add New Member';
+            document.getElementById('memberForm').reset();
+            document.getElementById('memberId').value = '';
+
+            if (id) {
+                const m = DB.members.find(x => x.id === id);
+                if (m) {
+                    document.getElementById('memberId').value = m.id;
+                    document.getElementById('memberPowerId').value = m.powerId;
+                    document.getElementById('memberName').value = m.name;
+                    document.getElementById('memberPhone').value = m.phone;
+                    document.getElementById('memberEmail').value = m.email;
+                    document.getElementById('memberStatus').value = m.status;
+                    document.getElementById('memberFee').value = m.fee;
+                }
+            } else if (DB.settings.autoId) {
+                const nextId = String(DB.members.length + 1).padStart(3, '0');
+                document.getElementById('memberPowerId').value = nextId;
+            }
+
+            openModal('memberModal');
+        }
+
+        function editMember(id) { openMemberModal(id); }
+
+        function pauseMember(id) {
+            const m = DB.members.find(x => x.id === id);
+            if (m) { m.status = 'paused'; renderMembers(); showToast('Member paused'); }
+        }
+
+        function activateMember(id) {
+            const m = DB.members.find(x => x.id === id);
+            if (m) { m.status = 'active'; renderMembers(); showToast('Member activated'); }
+        }
+
+        document.getElementById('memberForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('memberId').value;
+            const data = {
+                powerId: document.getElementById('memberPowerId').value || String(DB.members.length + 1).padStart(3, '0'),
+                name: document.getElementById('memberName').value.toUpperCase(),
+                phone: document.getElementById('memberPhone').value,
+                email: document.getElementById('memberEmail').value,
+                status: document.getElementById('memberStatus').value,
+                fee: parseInt(document.getElementById('memberFee').value) || 1000
+            };
+
+            if (id) {
+                const idx = DB.members.findIndex(x => x.id === id);
+                if (idx !== -1) DB.members[idx] = { ...DB.members[idx], ...data };
+                showToast('Member updated');
+            } else {
+                data.id = String(Date.now());
+                data.joined = new Date().toISOString().split('T')[0];
+                data.feePaid = false;
+                data.lastPayment = '';
+                data.notes = '';
+                DB.members.push(data);
+                showToast('Member added');
+            }
+
+            closeModal('memberModal');
+            renderMembers();
+        });
+
+        // ============================================
+        // ATTENDANCE MANAGEMENT
+        // ============================================
+        function initAttendanceDate() {
+            document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        function loadAttendance() {
+            const date = document.getElementById('attendanceDate').value;
+            const view = document.getElementById('attendanceView').value;
+            const attendance = DB.attendance[date] || {};
+            const activeMembers = DB.members.filter(m => m.status === 'active');
+
+            document.getElementById('attendanceTableTitle').textContent = `Attendance - ${formatDate(date)}`;
+
+            renderAttendanceTable(activeMembers, attendance, date);
+        }
+
+        function renderAttendanceTable(members, attendance, date) {
+            const search = document.getElementById('attendanceSearch').value.toLowerCase();
+            const filter = document.getElementById('attendanceFilter').value;
+
+            let filtered = members.filter(m => {
+                const matchSearch = m.name.toLowerCase().includes(search) || m.powerId.includes(search);
+                const isPresent = attendance[m.id]?.present;
+                const matchFilter = filter === 'all' || (filter === 'present' && isPresent) || (filter === 'absent' && !isPresent);
+                return matchSearch && matchFilter;
+            });
+
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = filtered.map(m => {
+                const att = attendance[m.id] || { present: false, time: '-' };
+                return `
+                    <tr>
+                        <td><strong>${m.powerId}</strong></td>
+                        <td>${m.name}</td>
+                        <td><span class="badge badge-${att.present ? 'present' : 'absent'}">${att.present ? 'PRESENT' : 'ABSENT'}</span></td>
+                        <td>${att.present ? att.time : '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-${att.present ? 'danger' : 'success'}" onclick="toggleAttendance('${m.id}', '${date}', ${!att.present})">
+                                Mark ${att.present ? 'Absent' : 'Present'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterAttendance() { loadAttendance(); }
+
+        function toggleAttendance(memberId, date, newStatus) {
+            const today = new Date().toISOString().split('T')[0];
+            const isPastDate = date < today;
+
+            if (isPastDate && DB.settings.pastEditEnabled) {
+                const member = DB.members.find(m => m.id === memberId);
+                pendingAttendanceEdit = { memberId, date, newStatus };
+                document.getElementById('attendanceEditDetails').innerHTML = `
+                    <p><strong>Member:</strong> ${member?.name}</p>
+                    <p><strong>Date:</strong> ${formatDate(date)}</p>
+                    <p><strong>New Status:</strong> ${newStatus ? 'PRESENT' : 'ABSENT'}</p>
+                `;
+                openModal('attendanceModal');
+            } else {
+                applyAttendanceChange(memberId, date, newStatus);
+            }
+        }
+
+        function confirmAttendanceEdit() {
+            if (pendingAttendanceEdit) {
+                applyAttendanceChange(pendingAttendanceEdit.memberId, pendingAttendanceEdit.date, pendingAttendanceEdit.newStatus);
+                pendingAttendanceEdit = null;
+                closeModal('attendanceModal');
+            }
+        }
+
+        function applyAttendanceChange(memberId, date, newStatus) {
+            if (!DB.attendance[date]) DB.attendance[date] = {};
+            DB.attendance[date][memberId] = {
+                present: newStatus,
+                time: newStatus ? new Date().toTimeString().slice(0, 5) : '-'
+            };
+            loadAttendance();
+            showToast('Attendance updated');
+        }
+
+        // ============================================
+        // FEES MANAGEMENT
+        // ============================================
+        function renderFees() {
+            const search = document.getElementById('feeSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('feeStatusFilter').value;
+
+            let filtered = DB.members.filter(m => {
+                if (m.status === 'left') return false;
+                const matchSearch = m.name.toLowerCase().includes(search) || m.powerId.includes(search);
+                const matchStatus = statusFilter === 'all' || (statusFilter === 'paid' && m.feePaid) || (statusFilter === 'unpaid' && !m.feePaid);
+                return matchSearch && matchStatus;
+            });
+
+            const tbody = document.getElementById('feesTableBody');
+            tbody.innerHTML = filtered.map(m => `
+                <tr>
+                    <td><strong>${m.powerId}</strong></td>
+                    <td>${m.name}</td>
+                    <td>₹${m.fee.toLocaleString()}</td>
+                    <td><span class="badge badge-${m.feePaid ? 'paid' : 'unpaid'}">${m.feePaid ? 'PAID' : 'UNPAID'}</span></td>
+                    <td>${m.lastPayment ? formatDate(m.lastPayment) : '-'}</td>
+                    <td>${m.notes || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" onclick="editFee('${m.id}')">Edit</button>
+                        ${!m.feePaid ? `<button class="btn btn-sm btn-success" onclick="markPaid('${m.id}')">Mark Paid</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterFees() { renderFees(); }
+
+        function editFee(id) {
+            const m = DB.members.find(x => x.id === id);
+            if (m) {
+                document.getElementById('feeMemberId').value = m.id;
+                document.getElementById('feeMemberName').value = m.name;
+                document.getElementById('feeAmount').value = m.fee;
+                document.getElementById('feeStatus').value = m.feePaid ? 'paid' : 'unpaid';
+                document.getElementById('feeNotes').value = m.notes;
+                openModal('feeModal');
+            }
+        }
+
+        function markPaid(id) {
+            const m = DB.members.find(x => x.id === id);
+            if (m) {
+                m.feePaid = true;
+                m.lastPayment = new Date().toISOString().split('T')[0];
+                renderFees();
+                showToast('Fee marked as paid');
+            }
+        }
+
+        document.getElementById('feeForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('feeMemberId').value;
+            const m = DB.members.find(x => x.id === id);
+            if (m) {
+                m.fee = parseInt(document.getElementById('feeAmount').value);
+                m.feePaid = document.getElementById('feeStatus').value === 'paid';
+                m.notes = document.getElementById('feeNotes').value;
+                if (m.feePaid && !m.lastPayment) m.lastPayment = new Date().toISOString().split('T')[0];
+                closeModal('feeModal');
+                renderFees();
+                showToast('Fee updated');
+            }
+        });
+
+        // ============================================
+        // EXCEL IMPORT / EXPORT
+        // ============================================
+        function importExcel(type, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(sheet);
+
+                    if (type === 'members') importMembers(json);
+                    else if (type === 'attendance') importAttendanceData(json);
+                    else if (type === 'fees') importFeesData(json);
+
+                    showToast(`${type} imported successfully`);
+                } catch (err) {
+                    showToast('Invalid Excel file', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            input.value = '';
+        }
+
+        function importMembers(data) {
+            data.forEach(row => {
+                if (row.Name || row.name) {
+                    DB.members.push({
+                        id: String(Date.now() + Math.random()),
+                        powerId: row.PowerID || row.powerId || String(DB.members.length + 1).padStart(3, '0'),
+                        name: (row.Name || row.name).toUpperCase(),
+                        phone: row.Phone || row.phone || '',
+                        email: row.Email || row.email || '',
+                        status: row.Status || 'active',
+                        fee: row.Fee || 1000,
+                        feePaid: false,
+                        lastPayment: '',
+                        joined: new Date().toISOString().split('T')[0],
+                        notes: ''
+                    });
+                }
+            });
+            renderMembers();
+        }
+
+        function importAttendanceData(data) { /* Implement based on your format */ }
+        function importFeesData(data) { /* Implement based on your format */ }
+
+        function exportExcel(type) {
+            let data = [], filename = '';
+
+            if (type === 'members') {
+                data = DB.members.map(m => ({
+                    'Power ID': m.powerId, 'Name': m.name, 'Phone': m.phone,
+                    'Email': m.email, 'Status': m.status, 'Fee': m.fee, 'Joined': m.joined
+                }));
+                filename = 'members.xlsx';
+            } else if (type === 'daily-attendance') {
+                const date = new Date().toISOString().split('T')[0];
+                const att = DB.attendance[date] || {};
+                data = DB.members.filter(m => m.status === 'active').map(m => ({
+                    'Power ID': m.powerId, 'Name': m.name,
+                    'Status': att[m.id]?.present ? 'Present' : 'Absent',
+                    'Time': att[m.id]?.time || '-'
+                }));
+                filename = `attendance_${date}.xlsx`;
+            } else if (type === 'monthly-attendance' || type === 'monthly-report') {
+                const month = document.getElementById('reportMonth')?.value || new Date().toISOString().slice(0, 7);
+                data = DB.members.filter(m => m.status !== 'left').map(m => {
+                    let present = 0, total = 0;
+                    Object.keys(DB.attendance).forEach(date => {
+                        if (date.startsWith(month)) {
+                            total++;
+                            if (DB.attendance[date][m.id]?.present) present++;
+                        }
+                    });
+                    return {
+                        'Power ID': m.powerId, 'Name': m.name,
+                        'Present Days': present, 'Total Days': total,
+                        'Attendance %': total > 0 ? Math.round((present / total) * 100) + '%' : '0%'
+                    };
+                });
+                filename = `monthly_attendance_${month}.xlsx`;
+            } else if (type === 'fees-pending' || type === 'fees-report') {
+                data = DB.members.filter(m => m.status !== 'left' && !m.feePaid).map(m => ({
+                    'Power ID': m.powerId, 'Name': m.name, 'Fee': m.fee,
+                    'Last Payment': m.lastPayment || 'Never', 'Notes': m.notes
+                }));
+                filename = 'fees_pending.xlsx';
+            }
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data');
+            XLSX.writeFile(wb, filename);
+            showToast('Excel exported');
+        }
+
+        // ============================================
+        // REPORTS
+        // ============================================
+        function initReportMonth() {
+            document.getElementById('reportMonth').value = new Date().toISOString().slice(0, 7);
+        }
+
+        function switchReportTab(tab) {
+            document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('attendanceReportTab').style.display = tab === 'attendance' ? 'block' : 'none';
+            document.getElementById('feesReportTab').style.display = tab === 'fees' ? 'block' : 'none';
+        }
+
+        function generateAttendanceReport() {
+            const month = document.getElementById('reportMonth').value;
+            const tbody = document.getElementById('attendanceReportBody');
+
+            const reportData = DB.members.filter(m => m.status !== 'left').map(m => {
+                let present = 0, total = 0;
+                Object.keys(DB.attendance).forEach(date => {
+                    if (date.startsWith(month)) {
+                        total++;
+                        if (DB.attendance[date][m.id]?.present) present++;
+                    }
+                });
+                const percent = total > 0 ? Math.round((present / total) * 100) : 0;
+                return { ...m, present, absent: total - present, percent };
+            });
+
+            tbody.innerHTML = reportData.map(m => `
+                <tr>
+                    <td><strong>${m.powerId}</strong></td>
+                    <td>${m.name}</td>
+                    <td style="color: var(--success)">${m.present}</td>
+                    <td style="color: var(--danger)">${m.absent}</td>
+                    <td>${m.percent}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function generateFeesReport() {
+            const tbody = document.getElementById('feesReportBody');
+            const today = new Date();
+
+            const reportData = DB.members.filter(m => m.status !== 'left' && !m.feePaid).map(m => {
+                const lastDate = m.lastPayment ? new Date(m.lastPayment) : new Date(m.joined);
+                const overdue = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+                return { ...m, overdue };
+            });
+
+            tbody.innerHTML = reportData.map(m => `
+                <tr>
+                    <td><strong>${m.powerId}</strong></td>
+                    <td>${m.name}</td>
+                    <td>₹${m.fee.toLocaleString()}</td>
+                    <td><span class="badge badge-unpaid">UNPAID</span></td>
+                    <td style="color: var(--danger)">${m.overdue} days</td>
+                </tr>
+            `).join('');
+
+            if (reportData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No pending fees</div></td></tr>';
+            }
+        }
+
+        // ============================================
+        // SETTINGS
+        // ============================================
+        function loadSettings() {
+            document.getElementById('gymName').value = DB.settings.gymName;
+            document.getElementById('defaultFee').value = DB.settings.defaultFee;
+            document.getElementById('lockDays').value = DB.settings.lockDays;
+            document.getElementById('togglePastEdit').classList.toggle('active', DB.settings.pastEditEnabled);
+            document.getElementById('toggleKiosk').classList.toggle('active', DB.settings.kioskMode);
+            document.getElementById('toggleAutoId').classList.toggle('active', DB.settings.autoId);
+        }
+
+        function toggleSetting(setting) {
+            if (setting === 'pastEdit') {
+                DB.settings.pastEditEnabled = !DB.settings.pastEditEnabled;
+                document.getElementById('togglePastEdit').classList.toggle('active');
+            } else if (setting === 'kiosk') {
+                DB.settings.kioskMode = !DB.settings.kioskMode;
+                document.getElementById('toggleKiosk').classList.toggle('active');
+            } else if (setting === 'autoId') {
+                DB.settings.autoId = !DB.settings.autoId;
+                document.getElementById('toggleAutoId').classList.toggle('active');
+            }
+        }
+
+        function saveSettings() {
+            DB.settings.gymName = document.getElementById('gymName').value;
+            DB.settings.defaultFee = parseInt(document.getElementById('defaultFee').value);
+            DB.settings.lockDays = parseInt(document.getElementById('lockDays').value);
+            showToast('Settings saved');
+        }
+
+        // ============================================
+        // UTILITIES
+        // ============================================
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
+            toast.className = `toast show ${type}`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ============================================
+        // FIREBASE INTEGRATION PLACEHOLDER
+        // ============================================
+        /*
+        // Initialize Firebase (replace with your config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Firebase Security Rules (set in Firebase Console):
+        // {
+        //   "rules": {
+        //     "members": { ".read": "auth != null && auth.token.role == 'owner'", ".write": "auth != null && auth.token.role == 'owner'" },
+        //     "attendance": { ".read": "auth != null && auth.token.role == 'owner'", ".write": "auth != null && auth.token.role == 'owner'" },
+        //     "settings": { ".read": "auth != null && auth.token.role == 'owner'", ".write": "auth != null && auth.token.role == 'owner'" }
+        //   }
+        // }
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Replace DB operations with Firestore calls:
+        // db.collection('members').get() - Read members
+        // db.collection('members').add(data) - Add member
+        // db.collection('members').doc(id).update(data) - Update member
+        // db.collection('attendance').doc(date).set(data) - Save attendance
+        */
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        loadDashboard();
+    </script>
+</body>
+</html>
