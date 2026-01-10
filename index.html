@@ -767,7 +767,7 @@
         <!-- Selection Screen -->
         <div id="selectionScreen" class="screen active">
             <div class="logo-container">
-                <h1 class="logo">TRANSFORMERS</h1>
+                <h1 class="logo">GYM PROTOTYPE</h1>
                 <p class="tagline">Transform Your Life</p>
             </div>
 
@@ -875,16 +875,16 @@
                     </div>
                     <div class="demo-item">
                         <span>Password:</span>
-                        <span>transformers</span>
+                        <span>gym</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Dashboard Screen -->
+        <!-- Dashboard Screen (Not used - redirects instead) -->
         <div id="dashboardScreen" class="screen">
             <div class="logo-container">
-                <h1 class="logo">Transformers</h1>
+                <h1 class="logo">GYM PROTOTYPE</h1>
             </div>
 
             <div class="dashboard">
@@ -918,7 +918,7 @@
                     </div>
 
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
-                        Your dashboard is ready. This placeholder will redirect to your full portal.
+                        Redirecting to your dashboard...
                     </p>
 
                     <button class="btn-secondary" id="logoutBtn">
@@ -930,36 +930,22 @@
     </div>
 
     <script>
-        /**
-         * GYM Login Portal - Frontend Application
-         * Handles user role selection, authentication, and navigation
-         */
-
         (function() {
             'use strict';
 
-            // =====================
-            // Configuration
-            // =====================
             const CONFIG = {
                 credentials: {
-                    owner: { id: 'owner@123', password: 'transformers' },
-                    member: { id: 'member@123', password: 'transformers' }
+                    owner: { id: 'owner@123', password: 'gym' },
+                    member: { id: 'member@123', password: 'gym' }
                 },
-                animationDelay: 1500 // Simulated login delay (ms)
+                animationDelay: 1500
             };
 
-            // =====================
-            // State Management
-            // =====================
             const state = {
                 currentRole: null,
                 isLoading: false
             };
 
-            // =====================
-            // DOM Elements
-            // =====================
             const elements = {
                 screens: {
                     selection: document.getElementById('selectionScreen'),
@@ -983,63 +969,44 @@
                 logoutBtn: document.getElementById('logoutBtn')
             };
 
-            // =====================
-            // Screen Navigation
-            // =====================
             function showScreen(screenName) {
-                // Hide all screens
                 Object.values(elements.screens).forEach(screen => {
                     screen.classList.remove('active');
                 });
                 
-                // Show target screen
                 if (elements.screens[screenName]) {
                     elements.screens[screenName].classList.add('active');
                 }
             }
 
-            // =====================
-            // Role Selection Handler
-            // =====================
             function handleRoleSelection(role) {
                 state.currentRole = role;
                 
-                // Update login screen for selected role
                 const roleDisplay = role.charAt(0).toUpperCase() + role.slice(1);
                 elements.loginTypeBadge.textContent = roleDisplay;
                 elements.demoId.textContent = CONFIG.credentials[role].id;
                 
-                // Clear previous inputs and errors
                 elements.loginForm.reset();
                 hideError();
                 
-                // Navigate to login screen
                 showScreen('login');
                 
-                // Focus on login ID field
                 setTimeout(() => {
                     elements.loginId.focus();
                 }, 300);
             }
 
-            // =====================
-            // Password Toggle
-            // =====================
             function togglePasswordVisibility() {
                 const type = elements.password.type === 'password' ? 'text' : 'password';
                 elements.password.type = type;
             }
 
-            // =====================
-            // Error Handling
-            // =====================
             function showError(message) {
                 elements.errorMessage.textContent = message;
                 elements.errorMessage.classList.add('show');
                 elements.loginId.classList.add('error');
                 elements.password.classList.add('error');
                 
-                // Remove error styling after animation
                 setTimeout(() => {
                     elements.loginId.classList.remove('error');
                     elements.password.classList.remove('error');
@@ -1050,17 +1017,11 @@
                 elements.errorMessage.classList.remove('show');
             }
 
-            // =====================
-            // Form Validation
-            // =====================
             function validateCredentials(loginId, password) {
                 const credentials = CONFIG.credentials[state.currentRole];
                 return loginId === credentials.id && password === credentials.password;
             }
 
-            // =====================
-            // Login Handler
-            // =====================
             async function handleLogin(event) {
                 event.preventDefault();
                 
@@ -1071,26 +1032,20 @@
                 const loginId = elements.loginId.value.trim();
                 const password = elements.password.value;
                 
-                // Basic validation
                 if (!loginId || !password) {
                     showError('Please fill in all fields.');
                     return;
                 }
                 
-                // Set loading state
                 state.isLoading = true;
                 elements.loginBtn.classList.add('loading');
                 elements.loginBtn.disabled = true;
                 
-                // Simulate network delay for realistic UX
                 await new Promise(resolve => setTimeout(resolve, CONFIG.animationDelay));
                 
-                // Validate credentials
                 if (validateCredentials(loginId, password)) {
-                    // Success - navigate to dashboard
                     navigateToDashboard(loginId);
                 } else {
-                    // Failed - show error
                     showError('Invalid credentials. Please check your login ID and password.');
                     state.isLoading = false;
                     elements.loginBtn.classList.remove('loading');
@@ -1098,30 +1053,15 @@
                 }
             }
 
-            // =====================
-            // Dashboard Navigation
-            // =====================
             function navigateToDashboard(loginId) {
-                const roleDisplay = state.currentRole.charAt(0).toUpperCase() + state.currentRole.slice(1);
-                
-                // Update dashboard info
-                elements.dashboardRole.textContent = roleDisplay;
-                elements.userType.textContent = state.currentRole === 'owner' ? 'Gym Owner' : 'Gym Member';
-                elements.userLoginId.textContent = loginId;
-                elements.sessionTime.textContent = new Date().toLocaleTimeString();
-                
-                // Reset loading state
-                state.isLoading = false;
-                elements.loginBtn.classList.remove('loading');
-                elements.loginBtn.disabled = false;
-                
-                // Show dashboard
-                showScreen('dashboard');
+                // Redirect to appropriate page based on role
+                if (state.currentRole === 'owner') {
+                    window.location.href = 'owner.html';
+                } else if (state.currentRole === 'member') {
+                    window.location.href = 'members.html';
+                }
             }
 
-            // =====================
-            // Logout Handler
-            // =====================
             function handleLogout() {
                 state.currentRole = null;
                 elements.loginForm.reset();
@@ -1129,18 +1069,13 @@
                 showScreen('selection');
             }
 
-            // =====================
-            // Event Listeners
-            // =====================
             function initEventListeners() {
-                // Role selection cards
                 elements.selectionCards.forEach(card => {
                     card.addEventListener('click', () => {
                         const role = card.dataset.role;
                         handleRoleSelection(role);
                     });
                     
-                    // Keyboard accessibility
                     card.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -1150,33 +1085,24 @@
                     });
                 });
                 
-                // Back button
                 elements.backBtn.addEventListener('click', () => {
                     showScreen('selection');
                 });
                 
-                // Password toggle
                 elements.passwordToggle.addEventListener('click', togglePasswordVisibility);
                 
-                // Login form submission
                 elements.loginForm.addEventListener('submit', handleLogin);
                 
-                // Clear error on input
                 elements.loginId.addEventListener('input', hideError);
                 elements.password.addEventListener('input', hideError);
                 
-                // Logout button
                 elements.logoutBtn.addEventListener('click', handleLogout);
             }
 
-            // =====================
-            // Initialize Application
-            // =====================
             function init() {
                 initEventListeners();
             }
 
-            // Start app when DOM is ready
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', init);
             } else {
