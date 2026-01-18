@@ -22,8 +22,11 @@
             --border-color: #2a2a2a;
             --success: #4ade80;
             --error: #ff4d4d;
+            --zumba-accent: #ff6b9d;
+            --zumba-glow: rgba(255, 107, 157, 0.3);
             --gradient-1: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
             --gradient-2: linear-gradient(135deg, #ff4d4d 0%, #ff6b6b 100%);
+            --gradient-zumba: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
         }
 
         * {
@@ -89,6 +92,15 @@
             animation: float 10s ease-in-out infinite reverse;
         }
 
+        .glow-orb-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--zumba-accent);
+            bottom: 20%;
+            right: 10%;
+            animation: float 12s ease-in-out infinite;
+        }
+
         @keyframes float {
             0%, 100% { transform: translate(0, 0); }
             50% { transform: translate(30px, 30px); }
@@ -111,7 +123,7 @@
         .screen {
             display: none;
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             animation: fadeIn 0.5s ease;
         }
 
@@ -184,9 +196,9 @@
 
         .selection-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-            max-width: 700px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -194,7 +206,7 @@
             background: var(--gradient-1);
             border: 1px solid var(--border-color);
             border-radius: 20px;
-            padding: 50px 30px;
+            padding: 45px 25px;
             text-align: center;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -214,12 +226,23 @@
             transition: opacity 0.4s ease;
         }
 
+        .selection-card[data-role="zumba"]::before {
+            background: var(--gradient-zumba);
+        }
+
         .selection-card:hover {
             transform: translateY(-10px) scale(1.02);
             border-color: var(--accent);
             box-shadow: 
                 0 20px 60px rgba(0, 0, 0, 0.5),
                 0 0 40px var(--accent-glow);
+        }
+
+        .selection-card[data-role="zumba"]:hover {
+            border-color: var(--zumba-accent);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 40px var(--zumba-glow);
         }
 
         .selection-card:hover::before {
@@ -250,12 +273,23 @@
             background: rgba(255, 77, 77, 0.1);
         }
 
+        .selection-card[data-role="zumba"]:hover .card-icon {
+            border-color: var(--zumba-accent);
+            background: rgba(255, 107, 157, 0.1);
+        }
+
         .card-icon svg {
             width: 40px;
             height: 40px;
             fill: none;
             stroke: var(--accent);
             stroke-width: 1.5;
+        }
+
+        .selection-card[data-role="zumba"] .card-icon svg {
+            stroke: var(--zumba-accent);
+            fill: var(--zumba-accent);
+            stroke-width: 0;
         }
 
         .card-title {
@@ -334,6 +368,12 @@
             margin-bottom: 20px;
         }
 
+        .login-type-badge.zumba {
+            background: rgba(255, 107, 157, 0.1);
+            border-color: var(--zumba-accent);
+            color: var(--zumba-accent);
+        }
+
         .login-title {
             font-size: 2rem;
             font-weight: 700;
@@ -386,6 +426,12 @@
             border-color: var(--accent);
             background: rgba(255, 77, 77, 0.03);
             box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .form-input.zumba-focus:focus {
+            border-color: var(--zumba-accent);
+            background: rgba(255, 107, 157, 0.03);
+            box-shadow: 0 0 20px var(--zumba-glow);
         }
 
         .form-input.error {
@@ -479,6 +525,12 @@
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
+        .remember-me.zumba input:checked + .checkbox-custom {
+            background: var(--gradient-zumba);
+            border-color: var(--zumba-accent);
+            box-shadow: 0 0 15px var(--zumba-glow);
+        }
+
         .remember-me input:checked + .checkbox-custom svg {
             opacity: 1;
             transform: scale(1);
@@ -532,6 +584,10 @@
             text-transform: uppercase;
         }
 
+        .btn-primary.zumba {
+            background: var(--gradient-zumba);
+        }
+
         .btn-primary::before {
             content: '';
             position: absolute;
@@ -553,6 +609,12 @@
             box-shadow: 
                 0 10px 40px rgba(255, 77, 77, 0.4),
                 0 0 20px var(--accent-glow);
+        }
+
+        .btn-primary.zumba:hover {
+            box-shadow: 
+                0 10px 40px rgba(255, 107, 157, 0.4),
+                0 0 20px var(--zumba-glow);
         }
 
         .btn-primary:hover::before {
@@ -749,6 +811,10 @@
             font-weight: 500;
         }
 
+        .demo-item.zumba span:last-child {
+            color: var(--zumba-accent);
+        }
+
         /* =====================
            Saved Badge
            ===================== */
@@ -776,6 +842,19 @@
         /* =====================
            Responsive Design
            ===================== */
+        @media (max-width: 900px) {
+            .selection-grid {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 600px;
+            }
+
+            .selection-card:last-child {
+                grid-column: span 2;
+                max-width: 280px;
+                margin: 0 auto;
+            }
+        }
+
         @media (max-width: 768px) {
             .logo {
                 font-size: 3.5rem;
@@ -789,6 +868,11 @@
 
             .selection-card {
                 padding: 40px 25px;
+            }
+
+            .selection-card:last-child {
+                grid-column: span 1;
+                max-width: none;
             }
 
             .card-icon {
@@ -852,6 +936,7 @@
     <div class="bg-pattern"></div>
     <div class="glow-orb glow-orb-1"></div>
     <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
 
     <div class="container">
         <!-- Selection Screen -->
@@ -887,6 +972,35 @@
                     </div>
                     <h3 class="card-title">Member</h3>
                     <p class="card-desc">Access your workouts & schedule</p>
+                </div>
+
+                <!-- Zumba Card -->
+                <div class="selection-card" data-role="zumba" tabindex="0">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Head -->
+                            <circle cx="32" cy="12" r="7"/>
+                            <!-- Hair/Energy lines -->
+                            <path d="M26 8C24 5 26 2 30 3" stroke-width="2" stroke-linecap="round" stroke="currentColor" fill="none"/>
+                            <path d="M38 8C40 5 38 2 34 3" stroke-width="2" stroke-linecap="round" stroke="currentColor" fill="none"/>
+                            <!-- Body -->
+                            <path d="M32 19V32" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Left arm raised -->
+                            <path d="M32 22C28 20 22 14 18 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Right arm extended -->
+                            <path d="M32 24C36 22 44 24 50 20" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Left leg -->
+                            <path d="M32 32C28 38 22 42 16 48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Right leg -->
+                            <path d="M32 32C38 40 46 46 52 52" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Sparkles -->
+                            <circle cx="14" cy="8" r="2" opacity="0.7"/>
+                            <circle cx="50" cy="8" r="1.5" opacity="0.5"/>
+                            <circle cx="56" cy="30" r="2" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">Zumba</h3>
+                    <p class="card-desc">Track attendance & manage classes</p>
                 </div>
             </div>
         </div>
@@ -954,7 +1068,7 @@
                     </div>
 
                     <!-- Remember Me Checkbox -->
-                    <label class="remember-me" for="rememberMe">
+                    <label class="remember-me" id="rememberMeLabel" for="rememberMe">
                         <input type="checkbox" id="rememberMe">
                         <span class="checkbox-custom">
                             <svg viewBox="0 0 24 24">
@@ -976,13 +1090,13 @@
 
                 <div class="demo-credentials">
                     <p class="demo-title">Demo Credentials</p>
-                    <div class="demo-item">
+                    <div class="demo-item" id="demoCredentials">
                         <span>Login ID:</span>
                         <span id="demoId">owner@123</span>
                     </div>
-                    <div class="demo-item">
+                    <div class="demo-item" id="demoPasswordItem">
                         <span>Password:</span>
-                        <span>gym</span>
+                        <span id="demoPassword">gym</span>
                     </div>
                 </div>
             </div>
@@ -1043,7 +1157,13 @@
             const CONFIG = {
                 credentials: {
                     owner: { id: 'owner@123', password: 'gym' },
-                    member: { id: 'member@123', password: 'gym' }
+                    member: { id: 'member@123', password: 'gym' },
+                    zumba: { id: 'zumba', password: 'gym' }
+                },
+                redirects: {
+                    owner: 'owner.html',
+                    member: 'members.html',
+                    zumba: 'zumba.html'
                 },
                 animationDelay: 1500,
                 storageKey: 'gym_saved_credentials'
@@ -1070,12 +1190,15 @@
                 loginTypeBadge: document.getElementById('loginTypeBadge'),
                 errorMessage: document.getElementById('errorMessage'),
                 demoId: document.getElementById('demoId'),
+                demoPassword: document.getElementById('demoPassword'),
+                demoCredentials: document.getElementById('demoCredentials'),
                 dashboardRole: document.getElementById('dashboardRole'),
                 userType: document.getElementById('userType'),
                 userLoginId: document.getElementById('userLoginId'),
                 sessionTime: document.getElementById('sessionTime'),
                 logoutBtn: document.getElementById('logoutBtn'),
                 rememberMe: document.getElementById('rememberMe'),
+                rememberMeLabel: document.getElementById('rememberMeLabel'),
                 savedBadge: document.getElementById('savedBadge')
             };
 
@@ -1085,7 +1208,7 @@
                     const savedData = getSavedCredentials() || {};
                     savedData[role] = {
                         loginId: loginId,
-                        password: btoa(password) // Basic encoding (not secure, just for demo)
+                        password: btoa(password)
                     };
                     localStorage.setItem(CONFIG.storageKey, JSON.stringify(savedData));
                 } catch (e) {
@@ -1137,12 +1260,57 @@
                 }
             }
 
+            function updateUIForRole(role) {
+                const isZumba = role === 'zumba';
+                
+                // Update badge
+                if (isZumba) {
+                    elements.loginTypeBadge.classList.add('zumba');
+                } else {
+                    elements.loginTypeBadge.classList.remove('zumba');
+                }
+                
+                // Update button
+                if (isZumba) {
+                    elements.loginBtn.classList.add('zumba');
+                } else {
+                    elements.loginBtn.classList.remove('zumba');
+                }
+                
+                // Update remember me checkbox
+                if (isZumba) {
+                    elements.rememberMeLabel.classList.add('zumba');
+                } else {
+                    elements.rememberMeLabel.classList.remove('zumba');
+                }
+                
+                // Update input focus styles
+                if (isZumba) {
+                    elements.loginId.classList.add('zumba-focus');
+                    elements.password.classList.add('zumba-focus');
+                } else {
+                    elements.loginId.classList.remove('zumba-focus');
+                    elements.password.classList.remove('zumba-focus');
+                }
+                
+                // Update demo credentials style
+                if (isZumba) {
+                    elements.demoCredentials.classList.add('zumba');
+                } else {
+                    elements.demoCredentials.classList.remove('zumba');
+                }
+            }
+
             function handleRoleSelection(role) {
                 state.currentRole = role;
                 
                 const roleDisplay = role.charAt(0).toUpperCase() + role.slice(1);
                 elements.loginTypeBadge.textContent = roleDisplay;
                 elements.demoId.textContent = CONFIG.credentials[role].id;
+                elements.demoPassword.textContent = CONFIG.credentials[role].password;
+                
+                // Update UI colors for role
+                updateUIForRole(role);
                 
                 // Reset form
                 elements.loginForm.reset();
@@ -1225,10 +1393,9 @@
 
             function navigateToDashboard(loginId) {
                 // Redirect to appropriate page based on role
-                if (state.currentRole === 'owner') {
-                    window.location.href = 'owner.html';
-                } else if (state.currentRole === 'member') {
-                    window.location.href = 'members.html';
+                const redirectUrl = CONFIG.redirects[state.currentRole];
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
                 }
             }
 
