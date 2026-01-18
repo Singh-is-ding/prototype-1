@@ -429,11 +429,77 @@
             display: none;
         }
 
+        /* =====================
+           Remember Me Checkbox
+           ===================== */
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-me input {
+            display: none;
+        }
+
+        .checkbox-custom {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .checkbox-custom svg {
+            width: 14px;
+            height: 14px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.2s ease;
+        }
+
+        .remember-me:hover .checkbox-custom {
+            border-color: var(--accent);
+        }
+
+        .remember-me input:checked + .checkbox-custom {
+            background: var(--gradient-2);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .remember-me input:checked + .checkbox-custom svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .remember-me-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .remember-me:hover .remember-me-text {
+            color: var(--text-primary);
+        }
+
         .error-message {
             display: none;
             color: var(--error);
             font-size: 0.85rem;
             margin-top: 10px;
+            margin-bottom: 20px;
             padding: 12px 15px;
             background: rgba(255, 77, 77, 0.1);
             border-radius: 8px;
@@ -684,6 +750,30 @@
         }
 
         /* =====================
+           Saved Badge
+           ===================== */
+        .saved-badge {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--success);
+            margin-top: 8px;
+        }
+
+        .saved-badge.show {
+            display: inline-flex;
+        }
+
+        .saved-badge svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* =====================
            Responsive Design
            ===================== */
         @media (max-width: 768px) {
@@ -831,6 +921,12 @@
                                 required
                             >
                         </div>
+                        <span class="saved-badge" id="savedBadge">
+                            <svg viewBox="0 0 24 24">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Credentials loaded
+                        </span>
                     </div>
 
                     <div class="form-group">
@@ -856,6 +952,17 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Remember Me Checkbox -->
+                    <label class="remember-me" for="rememberMe">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkbox-custom">
+                            <svg viewBox="0 0 24 24">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <span class="remember-me-text">Remember my credentials</span>
+                    </label>
 
                     <div id="errorMessage" class="error-message">
                         Invalid credentials. Please check your login ID and password.
@@ -938,7 +1045,8 @@
                     owner: { id: 'owner@123', password: 'gym' },
                     member: { id: 'member@123', password: 'gym' }
                 },
-                animationDelay: 1500
+                animationDelay: 1500,
+                storageKey: 'gym_saved_credentials'
             };
 
             const state = {
@@ -966,8 +1074,58 @@
                 userType: document.getElementById('userType'),
                 userLoginId: document.getElementById('userLoginId'),
                 sessionTime: document.getElementById('sessionTime'),
-                logoutBtn: document.getElementById('logoutBtn')
+                logoutBtn: document.getElementById('logoutBtn'),
+                rememberMe: document.getElementById('rememberMe'),
+                savedBadge: document.getElementById('savedBadge')
             };
+
+            // Storage functions for saving credentials
+            function saveCredentials(role, loginId, password) {
+                try {
+                    const savedData = getSavedCredentials() || {};
+                    savedData[role] = {
+                        loginId: loginId,
+                        password: btoa(password) // Basic encoding (not secure, just for demo)
+                    };
+                    localStorage.setItem(CONFIG.storageKey, JSON.stringify(savedData));
+                } catch (e) {
+                    console.warn('Could not save credentials:', e);
+                }
+            }
+
+            function getSavedCredentials() {
+                try {
+                    const data = localStorage.getItem(CONFIG.storageKey);
+                    return data ? JSON.parse(data) : null;
+                } catch (e) {
+                    console.warn('Could not retrieve credentials:', e);
+                    return null;
+                }
+            }
+
+            function loadSavedCredentials(role) {
+                const savedData = getSavedCredentials();
+                if (savedData && savedData[role]) {
+                    elements.loginId.value = savedData[role].loginId;
+                    elements.password.value = atob(savedData[role].password);
+                    elements.rememberMe.checked = true;
+                    elements.savedBadge.classList.add('show');
+                    return true;
+                }
+                return false;
+            }
+
+            function clearSavedCredentials(role) {
+                try {
+                    const savedData = getSavedCredentials();
+                    if (savedData && savedData[role]) {
+                        delete savedData[role];
+                        localStorage.setItem(CONFIG.storageKey, JSON.stringify(savedData));
+                    }
+                } catch (e) {
+                    console.warn('Could not clear credentials:', e);
+                }
+            }
 
             function showScreen(screenName) {
                 Object.values(elements.screens).forEach(screen => {
@@ -986,8 +1144,13 @@
                 elements.loginTypeBadge.textContent = roleDisplay;
                 elements.demoId.textContent = CONFIG.credentials[role].id;
                 
+                // Reset form
                 elements.loginForm.reset();
+                elements.savedBadge.classList.remove('show');
                 hideError();
+                
+                // Try to load saved credentials for this role
+                loadSavedCredentials(role);
                 
                 showScreen('login');
                 
@@ -1044,6 +1207,13 @@
                 await new Promise(resolve => setTimeout(resolve, CONFIG.animationDelay));
                 
                 if (validateCredentials(loginId, password)) {
+                    // Handle remember me
+                    if (elements.rememberMe.checked) {
+                        saveCredentials(state.currentRole, loginId, password);
+                    } else {
+                        clearSavedCredentials(state.currentRole);
+                    }
+                    
                     navigateToDashboard(loginId);
                 } else {
                     showError('Invalid credentials. Please check your login ID and password.');
@@ -1065,6 +1235,7 @@
             function handleLogout() {
                 state.currentRole = null;
                 elements.loginForm.reset();
+                elements.savedBadge.classList.remove('show');
                 hideError();
                 showScreen('selection');
             }
@@ -1093,8 +1264,15 @@
                 
                 elements.loginForm.addEventListener('submit', handleLogin);
                 
-                elements.loginId.addEventListener('input', hideError);
-                elements.password.addEventListener('input', hideError);
+                elements.loginId.addEventListener('input', () => {
+                    hideError();
+                    elements.savedBadge.classList.remove('show');
+                });
+                
+                elements.password.addEventListener('input', () => {
+                    hideError();
+                    elements.savedBadge.classList.remove('show');
+                });
                 
                 elements.logoutBtn.addEventListener('click', handleLogout);
             }
