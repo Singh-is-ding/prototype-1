@@ -22,6 +22,8 @@
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -45,6 +47,7 @@
             position: fixed;
             height: 100vh;
             z-index: 100;
+            overflow-y: auto;
         }
 
         .sidebar-header {
@@ -91,6 +94,20 @@
 
         .nav-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
 
+        .nav-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 10px 20px;
+        }
+
+        .nav-label {
+            padding: 8px 20px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
         .sidebar-footer {
             padding: 20px;
             border-top: 1px solid var(--border);
@@ -111,6 +128,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .page-title { font-size: 1.5rem; font-weight: 700; }
@@ -123,7 +142,7 @@
         /* Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -141,6 +160,8 @@
         .stat-value.danger { color: var(--danger); }
         .stat-value.warning { color: var(--warning); }
         .stat-value.accent { color: var(--accent); }
+        .stat-value.purple { color: var(--purple); }
+        .stat-value.pink { color: var(--pink); }
 
         /* Tables */
         .table-container {
@@ -148,6 +169,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
+            margin-bottom: 20px;
         }
 
         .table-header {
@@ -164,12 +186,17 @@
 
         .table-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
-        table { width: 100%; border-collapse: collapse; }
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
 
         th, td {
             padding: 14px 20px;
             text-align: left;
             border-bottom: 1px solid var(--border);
+            white-space: nowrap;
         }
 
         th {
@@ -209,10 +236,15 @@
         .btn-danger { background: var(--danger); color: white; }
         .btn-danger:hover { opacity: 0.9; }
 
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { opacity: 0.9; }
+
         .btn-secondary { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); }
         .btn-secondary:hover { border-color: var(--text-muted); }
 
         .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
         /* Form Elements */
         .form-group { margin-bottom: 16px; }
@@ -238,6 +270,12 @@
 
         .form-input:focus, .form-select:focus { border-color: var(--accent); }
         .form-input::placeholder { color: var(--text-muted); }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
 
         .search-input {
             padding: 8px 14px;
@@ -265,9 +303,13 @@
         .badge-paused { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
         .badge-left { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
         .badge-paid { background: rgba(34, 197, 94, 0.15); color: var(--success); }
-        .badge-unpaid { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .badge-unpaid, .badge-pending { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
         .badge-present { background: rgba(34, 197, 94, 0.15); color: var(--success); }
         .badge-absent { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .badge-inside { background: rgba(59, 130, 246, 0.15); color: var(--accent); }
+        .badge-good { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .badge-fair { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge-poor { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
 
         /* Modal */
         .modal-overlay {
@@ -293,6 +335,8 @@
             max-height: 90vh;
             overflow-y: auto;
         }
+
+        .modal-lg { max-width: 700px; }
 
         .modal-header {
             display: flex;
@@ -347,6 +391,7 @@
             padding: 4px;
             border-radius: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .tab {
@@ -484,12 +529,26 @@
         .toast.error { border-color: var(--danger); }
         .toast-icon { font-size: 1.2rem; }
 
+        /* Date Range Picker */
+        .date-range {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-range-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .mobile-menu-btn { display: flex !important; }
+            .form-row { grid-template-columns: 1fr; }
         }
 
         .mobile-menu-btn {
@@ -518,6 +577,29 @@
         .empty-state-icon { font-size: 3rem; margin-bottom: 16px; }
         .empty-state-text { font-size: 1rem; margin-bottom: 8px; }
         .empty-state-sub { font-size: 0.85rem; }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Inside gym indicator */
+        .inside-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
@@ -533,6 +615,7 @@
             <div class="sidebar-subtitle">Owner Control Panel</div>
         </div>
         <ul class="nav-menu">
+            <!-- Main Navigation -->
             <li class="nav-item active" data-section="dashboard">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 Dashboard
@@ -549,6 +632,34 @@
                 <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 Fees
             </li>
+            
+            <div class="nav-divider"></div>
+            <div class="nav-label">Inventory</div>
+            
+            <li class="nav-item" data-section="supplements">
+                <svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="8" rx="2"/><path d="M3 10v8a2 2 0 002 2h14a2 2 0 002-2v-8"/><path d="M10 16h4"/></svg>
+                Supplements
+            </li>
+            <li class="nav-item" data-section="equipment">
+                <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M4 6.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M4 22.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M20 6.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M20 22.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M4 6.5v11"/><path d="M20 6.5v11"/></svg>
+                Equipment
+            </li>
+            <li class="nav-item" data-section="sales">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                Supplement Sales
+            </li>
+            
+            <div class="nav-divider"></div>
+            <div class="nav-label">Staff</div>
+            
+            <li class="nav-item" data-section="staff">
+                <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                Staff Management
+            </li>
+            
+            <div class="nav-divider"></div>
+            <div class="nav-label">Data</div>
+            
             <li class="nav-item" data-section="excel">
                 <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 Excel
@@ -582,38 +693,58 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Total Members</div>
-                    <div class="stat-value accent" id="totalMembers">0</div>
+                    <div class="stat-value accent" id="totalMembers">10</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Today's Present</div>
-                    <div class="stat-value success" id="todayPresent">0</div>
+                    <div class="stat-label">Present Today</div>
+                    <div class="stat-value success" id="todayPresent">9</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Today's Absent</div>
-                    <div class="stat-value danger" id="todayAbsent">0</div>
+                    <div class="stat-label">Active (Inside Gym)</div>
+                    <div class="stat-value purple" id="activeInside">4</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Monthly Attendance %</div>
-                    <div class="stat-value warning" id="monthlyPercent">0%</div>
+                    <div class="stat-label">Paused Members</div>
+                    <div class="stat-value warning" id="pausedMembers">1</div>
                 </div>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
+                    <div class="stat-label">Fee Pending</div>
+                    <div class="stat-value danger" id="feesPending">3</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fee Collected (Members)</div>
+                    <div class="stat-value success" id="feesCollectedCount">7</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Fee Collected</div>
+                    <div class="stat-value success" id="feesCollected">₹15,000</div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-label">Active Members</div>
-                    <div class="stat-value success" id="activeMembers">0</div>
+                    <div class="stat-value accent" id="activeMembers">9</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">Paused Members</div>
-                    <div class="stat-value warning" id="pausedMembers">0</div>
+            </div>
+
+            <!-- Quick Stats - Currently Inside -->
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">🏋️ Currently Inside Gym</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">Fees Pending</div>
-                    <div class="stat-value danger" id="feesPending">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Fees Collected (Month)</div>
-                    <div class="stat-value success" id="feesCollected">₹0</div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Power ID</th>
+                                <th>Name</th>
+                                <th>Check-in Time</th>
+                                <th>Package</th>
+                            </tr>
+                        </thead>
+                        <tbody id="insideGymTableBody"></tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -644,19 +775,23 @@
                         </select>
                     </div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Power ID</th>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Status</th>
-                            <th>Joined</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="membersTableBody"></tbody>
-                </table>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Power ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Package</th>
+                                <th>Fitness Goal</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -675,14 +810,6 @@
                     <input type="date" class="form-input" style="width: auto;" id="attendanceDate" onchange="loadAttendance()">
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">View:</label>
-                    <select class="form-select" style="width: auto;" id="attendanceView" onchange="loadAttendance()">
-                        <option value="day">Day</option>
-                        <option value="week">Week</option>
-                        <option value="month">Month</option>
-                    </select>
-                </div>
-                <div class="filter-group">
                     <label class="filter-label">Status:</label>
                     <select class="form-select" style="width: auto;" id="attendanceFilter" onchange="filterAttendance()">
                         <option value="all">All</option>
@@ -691,24 +818,30 @@
                     </select>
                 </div>
                 <input type="text" class="search-input" placeholder="Search by name or ID..." id="attendanceSearch" oninput="filterAttendance()">
+                <button class="btn btn-success btn-sm" onclick="markAllPresent()">Mark All Present</button>
+                <button class="btn btn-danger btn-sm" onclick="markAllAbsent()">Mark All Absent</button>
             </div>
 
             <div class="table-container">
                 <div class="table-header">
                     <div class="table-title" id="attendanceTableTitle">Attendance - Today</div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Power ID</th>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Time</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendanceTableBody"></tbody>
-                </table>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Power ID</th>
+                                <th>Name</th>
+                                <th>Package</th>
+                                <th>Fee Status</th>
+                                <th>Attendance</th>
+                                <th>Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -717,7 +850,7 @@
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Fees Management</h1>
-                    <p class="page-subtitle">Track member payments</p>
+                    <p class="page-subtitle">Track member payments with auto-calculated due dates</p>
                 </div>
             </div>
 
@@ -727,7 +860,7 @@
                     <select class="form-select" style="width: auto;" id="feeStatusFilter" onchange="filterFees()">
                         <option value="all">All</option>
                         <option value="paid">Paid</option>
-                        <option value="unpaid">Unpaid</option>
+                        <option value="pending">Pending</option>
                     </select>
                 </div>
                 <input type="text" class="search-input" placeholder="Search..." id="feeSearch" oninput="filterFees()">
@@ -737,20 +870,200 @@
                 <div class="table-header">
                     <div class="table-title">Fee Records</div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Power ID</th>
-                            <th>Name</th>
-                            <th>Monthly Fee</th>
-                            <th>Status</th>
-                            <th>Last Payment</th>
-                            <th>Notes</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="feesTableBody"></tbody>
-                </table>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Power ID</th>
+                                <th>Name</th>
+                                <th>Package</th>
+                                <th>Monthly Fee</th>
+                                <th>Last Payment</th>
+                                <th>Next Payment</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SUPPLEMENTS SECTION -->
+        <section class="section" id="supplementsSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Supplements Inventory</h1>
+                    <p class="page-subtitle">Manage supplement stock</p>
+                </div>
+                <button class="btn btn-primary" onclick="openSupplementModal()">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Supplement
+                </button>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Supplement List</div>
+                    <input type="text" class="search-input" placeholder="Search supplements..." id="supplementSearch" oninput="filterSupplements()">
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Brand</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplementsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- EQUIPMENT SECTION -->
+        <section class="section" id="equipmentSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Equipment Inventory</h1>
+                    <p class="page-subtitle">Manage gym equipment</p>
+                </div>
+                <button class="btn btn-primary" onclick="openEquipmentModal()">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Equipment
+                </button>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Equipment List</div>
+                    <input type="text" class="search-input" placeholder="Search equipment..." id="equipmentSearch" oninput="filterEquipment()">
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Equipment Name</th>
+                                <th>Type</th>
+                                <th>Condition</th>
+                                <th>Quantity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equipmentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SUPPLEMENT SALES SECTION -->
+        <section class="section" id="salesSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Supplement Sales</h1>
+                    <p class="page-subtitle">Track and manage supplement sales</p>
+                </div>
+                <button class="btn btn-primary" onclick="openSaleModal()">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Record Sale
+                </button>
+            </div>
+
+            <!-- Sales Summary -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Sales (This Month)</div>
+                    <div class="stat-value success" id="monthlySalesAmount">₹0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Items Sold (This Month)</div>
+                    <div class="stat-value accent" id="monthlySalesCount">0</div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="filter-bar">
+                <button class="btn btn-primary" onclick="exportMonthlySalesReport()">
+                    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export Monthly Report
+                </button>
+                <div class="date-range">
+                    <span class="date-range-label">Custom Range:</span>
+                    <input type="date" class="form-input" style="width: auto;" id="salesFromDate">
+                    <span class="date-range-label">to</span>
+                    <input type="date" class="form-input" style="width: auto;" id="salesToDate">
+                    <button class="btn btn-secondary" onclick="exportCustomSalesReport()">Export Range</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Sales Records</div>
+                    <input type="text" class="search-input" placeholder="Search sales..." id="salesSearch" oninput="filterSales()">
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Supplement</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Total Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- STAFF SECTION -->
+        <section class="section" id="staffSection">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Staff Management</h1>
+                    <p class="page-subtitle">Manage staff and salary records</p>
+                </div>
+                <button class="btn btn-primary" onclick="openStaffModal()">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Staff
+                </button>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Staff List</div>
+                    <div class="table-actions">
+                        <input type="text" class="search-input" placeholder="Search staff..." id="staffSearch" oninput="filterStaff()">
+                        <select class="form-select" style="width: auto;" id="staffRoleFilter" onchange="filterStaff()">
+                            <option value="all">All Roles</option>
+                            <option value="trainer">Trainers</option>
+                            <option value="sweeper">Sweepers</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Job Role</th>
+                                <th>Training Type</th>
+                                <th>Monthly Salary</th>
+                                <th>Payment Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -786,13 +1099,6 @@
                             </button>
                             <input type="file" accept=".xlsx,.xls" onchange="importExcel('attendance', this)">
                         </div>
-                        <div class="file-input-wrapper">
-                            <button class="btn btn-secondary" style="width: 100%;">
-                                <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                Import Fees
-                            </button>
-                            <input type="file" accept=".xlsx,.xls" onchange="importExcel('fees', this)">
-                        </div>
                     </div>
                 </div>
 
@@ -804,22 +1110,13 @@
                     </div>
                     <div class="excel-card-desc">Export data to Excel files for backup or analysis</div>
                     <div class="excel-options">
-                        <button class="btn btn-primary" onclick="exportExcel('members')">
-                            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                            Export All Members
-                        </button>
-                        <button class="btn btn-primary" onclick="exportExcel('daily-attendance')">
-                            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
-                            Export Daily Attendance
-                        </button>
-                        <button class="btn btn-primary" onclick="exportExcel('monthly-attendance')">
-                            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
-                            Export Monthly Attendance
-                        </button>
-                        <button class="btn btn-primary" onclick="exportExcel('fees-pending')">
-                            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/></svg>
-                            Export Fees Pending List
-                        </button>
+                        <button class="btn btn-primary" onclick="exportExcel('members')">Export All Members</button>
+                        <button class="btn btn-primary" onclick="exportExcel('daily-attendance')">Export Daily Attendance</button>
+                        <button class="btn btn-primary" onclick="exportExcel('monthly-attendance')">Export Monthly Attendance</button>
+                        <button class="btn btn-primary" onclick="exportExcel('fees-pending')">Export Fees Pending</button>
+                        <button class="btn btn-primary" onclick="exportExcel('supplements')">Export Supplements</button>
+                        <button class="btn btn-primary" onclick="exportExcel('equipment')">Export Equipment</button>
+                        <button class="btn btn-primary" onclick="exportExcel('staff')">Export Staff</button>
                     </div>
                 </div>
             </div>
@@ -852,18 +1149,20 @@
                     <div class="table-header">
                         <div class="table-title">Monthly Attendance Report</div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Power ID</th>
-                                <th>Name</th>
-                                <th>Present Days</th>
-                                <th>Absent Days</th>
-                                <th>Attendance %</th>
-                            </tr>
-                        </thead>
-                        <tbody id="attendanceReportBody"></tbody>
-                    </table>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Power ID</th>
+                                    <th>Name</th>
+                                    <th>Present Days</th>
+                                    <th>Absent Days</th>
+                                    <th>Attendance %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceReportBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -876,18 +1175,21 @@
                     <div class="table-header">
                         <div class="table-title">Fees Due Report</div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Power ID</th>
-                                <th>Name</th>
-                                <th>Monthly Fee</th>
-                                <th>Status</th>
-                                <th>Days Overdue</th>
-                            </tr>
-                        </thead>
-                        <tbody id="feesReportBody"></tbody>
-                    </table>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Power ID</th>
+                                    <th>Name</th>
+                                    <th>Package</th>
+                                    <th>Fee</th>
+                                    <th>Status</th>
+                                    <th>Days Overdue</th>
+                                </tr>
+                            </thead>
+                            <tbody id="feesReportBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
@@ -930,22 +1232,15 @@
                 </div>
                 <div class="settings-row">
                     <div>
-                        <div class="settings-label">Lock Attendance After Days</div>
-                        <div class="settings-desc">Lock attendance records after this many days</div>
+                        <div class="settings-label">Auto-mark Fee Paid on Attendance</div>
+                        <div class="settings-desc">When member attends after fee expiry, auto-mark as paid</div>
                     </div>
-                    <input type="number" class="form-input" style="width: 100px;" id="lockDays" value="7">
+                    <div class="toggle" id="toggleAutoFeePaid" onclick="toggleSetting('autoFeePaid')"></div>
                 </div>
             </div>
 
             <div class="settings-section">
                 <div class="settings-title">Display Settings</div>
-                <div class="settings-row">
-                    <div>
-                        <div class="settings-label">Fullscreen / Kiosk Mode</div>
-                        <div class="settings-desc">Enable fullscreen mode for member check-in</div>
-                    </div>
-                    <div class="toggle" id="toggleKiosk" onclick="toggleSetting('kiosk')"></div>
-                </div>
                 <div class="settings-row">
                     <div>
                         <div class="settings-label">Auto-generate Power ID</div>
@@ -956,6 +1251,7 @@
             </div>
 
             <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            <button class="btn btn-danger" style="margin-left: 10px;" onclick="resetAllData()">Reset All Data</button>
         </section>
 
     </main>
@@ -971,33 +1267,59 @@
             </div>
             <form id="memberForm">
                 <input type="hidden" id="memberId">
-                <div class="form-group">
-                    <label class="form-label">Power ID</label>
-                    <input type="text" class="form-input" id="memberPowerId" placeholder="Auto-generated or enter manually">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Power ID</label>
+                        <input type="text" class="form-input" id="memberPowerId" placeholder="Auto-generated">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="memberName" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Full Name *</label>
-                    <input type="text" class="form-input" id="memberName" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" id="memberPhone">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="memberEmail">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Phone</label>
-                    <input type="tel" class="form-input" id="memberPhone">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Package *</label>
+                        <select class="form-select" id="memberPackage" required>
+                            <option value="1 Month">1 Month</option>
+                            <option value="3 Months">3 Months</option>
+                            <option value="6 Months">6 Months</option>
+                            <option value="1 Year">1 Year</option>
+                            <option value="5 Years">5 Years</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fitness Goal *</label>
+                        <select class="form-select" id="memberFitnessGoal" required>
+                            <option value="Cardio">Cardio</option>
+                            <option value="Strength">Strength</option>
+                            <option value="Cardio + Strength">Cardio + Strength</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="memberEmail">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" id="memberStatus">
-                        <option value="active">Active</option>
-                        <option value="paused">Paused</option>
-                        <option value="left">Left</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Monthly Fee</label>
-                    <input type="number" class="form-input" id="memberFee" value="1000">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="memberStatus">
+                            <option value="active">Active</option>
+                            <option value="paused">Paused</option>
+                            <option value="left">Left</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Monthly Fee (₹)</label>
+                        <input type="number" class="form-input" id="memberFee" value="1000">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
@@ -1007,34 +1329,11 @@
         </div>
     </div>
 
-    <!-- Attendance Edit Modal -->
-    <div class="modal-overlay" id="attendanceModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Edit Attendance</h3>
-                <button class="modal-close" onclick="closeModal('attendanceModal')">
-                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div id="attendanceModalContent">
-                <p style="margin-bottom: 16px; color: var(--text-secondary);">Confirm attendance change:</p>
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                    <div id="attendanceEditDetails"></div>
-                </div>
-                <p style="font-size: 0.85rem; color: var(--warning);">⚠️ This will edit a past attendance record.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('attendanceModal')">Cancel</button>
-                <button class="btn btn-primary" onclick="confirmAttendanceEdit()">Confirm Change</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Fee Edit Modal -->
+    <!-- Fee Payment Modal -->
     <div class="modal-overlay" id="feeModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Update Fee Status</h3>
+                <h3 class="modal-title">Update Fee Payment</h3>
                 <button class="modal-close" onclick="closeModal('feeModal')">
                     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -1046,25 +1345,218 @@
                     <input type="text" class="form-input" id="feeMemberName" disabled>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Monthly Fee</label>
-                    <input type="number" class="form-input" id="feeAmount">
+                    <label class="form-label">Package</label>
+                    <input type="text" class="form-input" id="feeMemberPackage" disabled>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" id="feeStatus">
-                        <option value="paid">Paid</option>
-                        <option value="unpaid">Unpaid</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Notes</label>
-                    <input type="text" class="form-input" id="feeNotes">
+                    <label class="form-label">Payment Date</label>
+                    <input type="date" class="form-input" id="feePaymentDate">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('feeModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Fee</button>
+                    <button type="submit" class="btn btn-success">Mark as Paid</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Supplement Modal -->
+    <div class="modal-overlay" id="supplementModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="supplementModalTitle">Add Supplement</h3>
+                <button class="modal-close" onclick="closeModal('supplementModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="supplementForm">
+                <input type="hidden" id="supplementId">
+                <div class="form-group">
+                    <label class="form-label">Supplement Name *</label>
+                    <input type="text" class="form-input" id="supplementName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Brand *</label>
+                    <input type="text" class="form-input" id="supplementBrand" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Price (₹) *</label>
+                        <input type="number" class="form-input" id="supplementPrice" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stock *</label>
+                        <input type="number" class="form-input" id="supplementStock" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('supplementModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Equipment Modal -->
+    <div class="modal-overlay" id="equipmentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="equipmentModalTitle">Add Equipment</h3>
+                <button class="modal-close" onclick="closeModal('equipmentModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="equipmentForm">
+                <input type="hidden" id="equipmentId">
+                <div class="form-group">
+                    <label class="form-label">Equipment Name *</label>
+                    <input type="text" class="form-input" id="equipmentName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type *</label>
+                        <select class="form-select" id="equipmentType" required>
+                            <option value="Cardio">Cardio</option>
+                            <option value="Strength">Strength</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Condition *</label>
+                        <select class="form-select" id="equipmentCondition" required>
+                            <option value="Good">Good</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Poor">Poor</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantity *</label>
+                    <input type="number" class="form-input" id="equipmentQuantity" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('equipmentModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sale Modal -->
+    <div class="modal-overlay" id="saleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Sale</h3>
+                <button class="modal-close" onclick="closeModal('saleModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="saleForm">
+                <div class="form-group">
+                    <label class="form-label">Supplement *</label>
+                    <select class="form-select" id="saleSupplementId" required onchange="updateSalePrice()">
+                        <option value="">Select Supplement</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Quantity *</label>
+                        <input type="number" class="form-input" id="saleQuantity" required min="1" value="1" onchange="updateSaleTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Unit Price (₹)</label>
+                        <input type="number" class="form-input" id="saleUnitPrice" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Amount (₹)</label>
+                    <input type="number" class="form-input" id="saleTotalAmount" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-input" id="saleDate">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('saleModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Record Sale</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Staff Modal -->
+    <div class="modal-overlay" id="staffModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="staffModalTitle">Add Staff</h3>
+                <button class="modal-close" onclick="closeModal('staffModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="staffForm">
+                <input type="hidden" id="staffId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="staffName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone *</label>
+                        <input type="tel" class="form-input" id="staffPhone" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Job Role *</label>
+                    <select class="form-select" id="staffRole" required onchange="toggleTrainingType()">
+                        <option value="Sweeper">Sweeper</option>
+                        <option value="Trainer">Trainer</option>
+                    </select>
+                </div>
+                <div class="form-group" id="trainingTypeGroup" style="display: none;">
+                    <label class="form-label">Training Type</label>
+                    <select class="form-select" id="staffTrainingType">
+                        <option value="">Select Training Type</option>
+                        <option value="Zumba">Zumba</option>
+                        <option value="Martial Arts">Martial Arts</option>
+                        <option value="Strength Training">Strength Training</option>
+                        <option value="Cardio Boxing">Cardio Boxing</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Salary (₹) *</label>
+                    <input type="number" class="form-input" id="staffSalary" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('staffModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Edit Modal -->
+    <div class="modal-overlay" id="attendanceModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Attendance Edit</h3>
+                <button class="modal-close" onclick="closeModal('attendanceModal')">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div id="attendanceModalContent">
+                <div id="attendanceEditDetails" style="background: var(--bg-secondary); padding: 16px; border-radius: 8px;"></div>
+                <div id="feeExpiredWarning" style="margin-top: 16px; padding: 12px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; display: none;">
+                    <p style="color: var(--warning); font-weight: 600;">⚠️ Fee Expired!</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">This member's fee has expired. Choose an action:</p>
+                    <div class="btn-group" style="margin-top: 12px;">
+                        <button class="btn btn-success btn-sm" onclick="confirmAttendanceWithFeePaid()">Mark Attendance + Fee Paid</button>
+                        <button class="btn btn-warning btn-sm" onclick="confirmAttendanceOnly()">Mark Attendance Only</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="attendanceModalFooter">
+                <button class="btn btn-secondary" onclick="closeModal('attendanceModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmAttendanceEdit()">Confirm</button>
+            </div>
         </div>
     </div>
 
@@ -1076,69 +1568,167 @@
 
     <script>
         /**
-         * GYM OWNER ADMIN PANEL
-         * Complete management system with Firebase structure
-         * 
-         * NOTE: Firebase integration placeholders included.
-         * Replace with actual Firebase config for production.
+         * =====================================================
+         * GYM OWNER ADMIN PANEL - COMPLETE SYSTEM
+         * =====================================================
+         * Features:
+         * - Fixed dashboard values (no random data)
+         * - Members with Package & Fitness Goal
+         * - Advanced Fees with auto-calculated due dates
+         * - Optimized Attendance System
+         * - Supplements & Equipment Inventory
+         * - Supplement Sales with Excel Reports
+         * - Staff Management with Salary Tracking
+         * - LocalStorage persistence
+         * =====================================================
          */
 
-        // ============================================
-        // MOCK DATABASE (Replace with Firebase)
-        // ============================================
-        let DB = {
+        // =====================================================
+        // FIXED DATABASE - Initial Data (Stored in LocalStorage)
+        // =====================================================
+        
+        // Package duration in days for fee calculation
+        const PACKAGE_DAYS = {
+            '1 Month': 30,
+            '3 Months': 90,
+            '6 Months': 180,
+            '1 Year': 365,
+            '5 Years': 1825
+        };
+
+        // Fixed initial data - will only be used if no data in localStorage
+        const INITIAL_DATA = {
+            // 10 Fixed Members with Package and Fitness Goal
             members: [
-                { id: '1', powerId: '001', name: 'ADITYA SHARMA', phone: '9876543210', email: 'aditya@email.com', status: 'active', fee: 1000, feePaid: true, lastPayment: '2025-01-01', joined: '2024-06-15', notes: '' },
-                { id: '2', powerId: '002', name: 'VAISHNAV KUMAR', phone: '9876543211', email: '', status: 'active', fee: 1200, feePaid: false, lastPayment: '2024-12-01', joined: '2024-07-20', notes: 'Payment pending' },
-                { id: '3', powerId: '003', name: 'AKSHAT SINGH', phone: '9876543212', email: '', status: 'paused', fee: 1000, feePaid: true, lastPayment: '2025-01-05', joined: '2024-08-10', notes: 'On vacation' },
-                { id: '4', powerId: '004', name: 'ADARSH VERMA', phone: '9876543213', email: '', status: 'active', fee: 1500, feePaid: true, lastPayment: '2025-01-03', joined: '2024-05-01', notes: '' },
-                { id: '5', powerId: '005', name: 'GEETA RANI', phone: '9876543214', email: '', status: 'active', fee: 1000, feePaid: false, lastPayment: '2024-11-15', joined: '2024-09-01', notes: '' },
-                { id: '6', powerId: '006', name: 'SURAJ YADAV', phone: '9876543215', email: '', status: 'active', fee: 1000, feePaid: true, lastPayment: '2025-01-02', joined: '2024-10-12', notes: '' },
-                { id: '7', powerId: '007', name: 'SAKSHI GUPTA', phone: '9876543216', email: '', status: 'left', fee: 1000, feePaid: true, lastPayment: '2024-10-01', joined: '2024-03-15', notes: 'Left gym' },
-                { id: '8', powerId: '008', name: 'SUMAN DEVI', phone: '9876543217', email: '', status: 'active', fee: 800, feePaid: true, lastPayment: '2025-01-04', joined: '2024-11-01', notes: '' },
-                { id: '9', powerId: '009', name: 'KASHISH MEHTA', phone: '9876543218', email: '', status: 'active', fee: 1000, feePaid: false, lastPayment: '2024-12-10', joined: '2024-04-20', notes: '' },
-                { id: '10', powerId: '010', name: 'SANVI PATEL', phone: '9876543219', email: '', status: 'active', fee: 1200, feePaid: true, lastPayment: '2025-01-06', joined: '2024-08-25', notes: '' }
+                { id: '1', powerId: '001', name: 'ADITYA SHARMA', phone: '9876543210', email: 'aditya@email.com', status: 'active', fee: 1500, package: '3 Months', fitnessGoal: 'Strength', lastPayment: '2025-01-01', joined: '2024-06-15', isInside: true },
+                { id: '2', powerId: '002', name: 'VAISHNAV KUMAR', phone: '9876543211', email: '', status: 'active', fee: 1200, package: '1 Month', fitnessGoal: 'Cardio', lastPayment: '2024-12-15', joined: '2024-07-20', isInside: false },
+                { id: '3', powerId: '003', name: 'AKSHAT SINGH', phone: '9876543212', email: '', status: 'paused', fee: 1000, package: '6 Months', fitnessGoal: 'Cardio + Strength', lastPayment: '2025-01-05', joined: '2024-08-10', isInside: false },
+                { id: '4', powerId: '004', name: 'ADARSH VERMA', phone: '9876543213', email: '', status: 'active', fee: 2500, package: '1 Year', fitnessGoal: 'Strength', lastPayment: '2025-01-03', joined: '2024-05-01', isInside: true },
+                { id: '5', powerId: '005', name: 'GEETA RANI', phone: '9876543214', email: '', status: 'active', fee: 1000, package: '1 Month', fitnessGoal: 'Cardio', lastPayment: '2024-11-15', joined: '2024-09-01', isInside: false },
+                { id: '6', powerId: '006', name: 'SURAJ YADAV', phone: '9876543215', email: '', status: 'active', fee: 1800, package: '3 Months', fitnessGoal: 'Cardio + Strength', lastPayment: '2025-01-10', joined: '2024-10-12', isInside: true },
+                { id: '7', powerId: '007', name: 'SAKSHI GUPTA', phone: '9876543216', email: '', status: 'left', fee: 1000, package: '1 Month', fitnessGoal: 'Cardio', lastPayment: '2024-10-01', joined: '2024-03-15', isInside: false },
+                { id: '8', powerId: '008', name: 'SUMAN DEVI', phone: '9876543217', email: '', status: 'active', fee: 2000, package: '6 Months', fitnessGoal: 'Strength', lastPayment: '2025-01-08', joined: '2024-11-01', isInside: true },
+                { id: '9', powerId: '009', name: 'KASHISH MEHTA', phone: '9876543218', email: '', status: 'active', fee: 1000, package: '1 Month', fitnessGoal: 'Cardio + Strength', lastPayment: '2024-12-10', joined: '2024-04-20', isInside: false },
+                { id: '10', powerId: '010', name: 'SANVI PATEL', phone: '9876543219', email: '', status: 'active', fee: 3000, package: '1 Year', fitnessGoal: 'Strength', lastPayment: '2025-01-06', joined: '2024-08-25', isInside: false }
             ],
+            // Fixed Attendance for today
             attendance: {},
+            // Supplements inventory
+            supplements: [
+                { id: '1', name: 'Whey Protein', brand: 'Optimum Nutrition', price: 2500, stock: 15 },
+                { id: '2', name: 'BCAA', brand: 'MuscleBlaze', price: 800, stock: 20 },
+                { id: '3', name: 'Creatine Monohydrate', brand: 'GNC', price: 1200, stock: 10 },
+                { id: '4', name: 'Pre-Workout', brand: 'C4', price: 1800, stock: 8 },
+                { id: '5', name: 'Mass Gainer', brand: 'Serious Mass', price: 3500, stock: 5 }
+            ],
+            // Equipment inventory
+            equipment: [
+                { id: '1', name: 'Treadmill', type: 'Cardio', condition: 'Good', quantity: 5 },
+                { id: '2', name: 'Dumbbells Set', type: 'Strength', condition: 'Good', quantity: 20 },
+                { id: '3', name: 'Barbell', type: 'Strength', condition: 'Good', quantity: 10 },
+                { id: '4', name: 'Elliptical', type: 'Cardio', condition: 'Fair', quantity: 3 },
+                { id: '5', name: 'Bench Press', type: 'Strength', condition: 'Good', quantity: 4 },
+                { id: '6', name: 'Rowing Machine', type: 'Cardio', condition: 'Good', quantity: 2 },
+                { id: '7', name: 'Lat Pulldown', type: 'Strength', condition: 'Good', quantity: 2 },
+                { id: '8', name: 'Leg Press', type: 'Strength', condition: 'Fair', quantity: 2 }
+            ],
+            // Supplement sales
+            sales: [
+                { id: '1', supplementId: '1', supplementName: 'Whey Protein', quantity: 2, unitPrice: 2500, totalAmount: 5000, date: '2025-01-10' },
+                { id: '2', supplementId: '2', supplementName: 'BCAA', quantity: 3, unitPrice: 800, totalAmount: 2400, date: '2025-01-12' },
+                { id: '3', supplementId: '3', supplementName: 'Creatine Monohydrate', quantity: 1, unitPrice: 1200, totalAmount: 1200, date: '2025-01-15' }
+            ],
+            // Staff records
+            staff: [
+                { id: '1', name: 'RAMESH KUMAR', phone: '9988776655', role: 'Trainer', trainingType: 'Strength Training', salary: 25000, paymentStatus: 'paid' },
+                { id: '2', name: 'PRIYA SINGH', phone: '9988776656', role: 'Trainer', trainingType: 'Zumba', salary: 20000, paymentStatus: 'paid' },
+                { id: '3', name: 'MOHAN LAL', phone: '9988776657', role: 'Sweeper', trainingType: '', salary: 10000, paymentStatus: 'pending' },
+                { id: '4', name: 'VIKRAM THAKUR', phone: '9988776658', role: 'Trainer', trainingType: 'Cardio Boxing', salary: 22000, paymentStatus: 'paid' }
+            ],
+            // Settings
             settings: {
                 gymName: 'TRANSFORMERS GYM',
                 defaultFee: 1000,
                 pastEditEnabled: true,
-                lockDays: 7,
-                kioskMode: false,
+                autoFeePaid: false,
                 autoId: true
+            },
+            // Fixed Dashboard Stats
+            dashboardStats: {
+                totalMembers: 10,
+                presentToday: 9,
+                activeInside: 4,
+                pausedMembers: 1,
+                feePending: 3,
+                feeCollectedCount: 7,
+                totalFeeCollected: 15000
             }
         };
 
-        // Generate attendance data for demo
-        function generateDemoAttendance() {
-            const today = new Date();
-            for (let d = 0; d < 30; d++) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - d);
-                const dateStr = date.toISOString().split('T')[0];
-                DB.attendance[dateStr] = {};
-                DB.members.forEach(m => {
-                    if (m.status === 'active') {
-                        DB.attendance[dateStr][m.id] = {
-                            present: Math.random() > 0.3,
-                            time: '07:' + String(Math.floor(Math.random() * 60)).padStart(2, '0')
-                        };
-                    }
-                });
+        // =====================================================
+        // DATABASE MANAGEMENT (LocalStorage)
+        // =====================================================
+        
+        let DB = {};
+
+        // Load data from localStorage or use initial data
+        function loadDatabase() {
+            const stored = localStorage.getItem('gymAdminDB');
+            if (stored) {
+                DB = JSON.parse(stored);
+                // Ensure all required properties exist
+                if (!DB.dashboardStats) DB.dashboardStats = INITIAL_DATA.dashboardStats;
+                if (!DB.supplements) DB.supplements = INITIAL_DATA.supplements;
+                if (!DB.equipment) DB.equipment = INITIAL_DATA.equipment;
+                if (!DB.sales) DB.sales = INITIAL_DATA.sales;
+                if (!DB.staff) DB.staff = INITIAL_DATA.staff;
+            } else {
+                DB = JSON.parse(JSON.stringify(INITIAL_DATA));
+                generateInitialAttendance();
+                saveDatabase();
             }
         }
-        generateDemoAttendance();
 
-        // ============================================
-        // STATE
-        // ============================================
+        // Save data to localStorage
+        function saveDatabase() {
+            localStorage.setItem('gymAdminDB', JSON.stringify(DB));
+        }
+
+        // Generate initial attendance data
+        function generateInitialAttendance() {
+            const today = new Date().toISOString().split('T')[0];
+            DB.attendance[today] = {};
+            // 9 present (all active except one)
+            const activeMembers = DB.members.filter(m => m.status === 'active');
+            activeMembers.forEach((m, idx) => {
+                DB.attendance[today][m.id] = {
+                    present: idx < 9, // First 9 active members are present
+                    time: idx < 9 ? `07:${String(15 + idx * 5).padStart(2, '0')}` : '-'
+                };
+            });
+        }
+
+        // Reset all data to initial state
+        function resetAllData() {
+            if (confirm('Are you sure you want to reset ALL data? This cannot be undone!')) {
+                localStorage.removeItem('gymAdminDB');
+                DB = JSON.parse(JSON.stringify(INITIAL_DATA));
+                generateInitialAttendance();
+                saveDatabase();
+                loadDashboard();
+                showToast('All data has been reset');
+            }
+        }
+
+        // =====================================================
+        // STATE MANAGEMENT
+        // =====================================================
         let currentSection = 'dashboard';
         let pendingAttendanceEdit = null;
 
-        // ============================================
+        // =====================================================
         // NAVIGATION
-        // ============================================
+        // =====================================================
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 const section = item.dataset.section;
@@ -1148,70 +1738,78 @@
 
         function switchSection(section) {
             currentSection = section;
+            // Update nav active state
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+            document.querySelector(`[data-section="${section}"]`)?.classList.add('active');
+            // Update section visibility
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(section + 'Section').classList.add('active');
+            document.getElementById(section + 'Section')?.classList.add('active');
 
             // Load section data
-            if (section === 'dashboard') loadDashboard();
-            else if (section === 'members') renderMembers();
-            else if (section === 'attendance') { initAttendanceDate(); loadAttendance(); }
-            else if (section === 'fees') renderFees();
-            else if (section === 'reports') { initReportMonth(); generateAttendanceReport(); generateFeesReport(); }
-            else if (section === 'settings') loadSettings();
+            switch(section) {
+                case 'dashboard': loadDashboard(); break;
+                case 'members': renderMembers(); break;
+                case 'attendance': initAttendanceDate(); loadAttendance(); break;
+                case 'fees': renderFees(); break;
+                case 'supplements': renderSupplements(); break;
+                case 'equipment': renderEquipment(); break;
+                case 'sales': renderSales(); break;
+                case 'staff': renderStaff(); break;
+                case 'reports': initReportMonth(); generateAttendanceReport(); generateFeesReport(); break;
+                case 'settings': loadSettings(); break;
+            }
 
             // Close mobile sidebar
             document.getElementById('sidebar').classList.remove('open');
         }
 
-        // Mobile menu
+        // Mobile menu toggle
         document.getElementById('mobileMenuBtn').addEventListener('click', () => {
             document.getElementById('sidebar').classList.toggle('open');
         });
 
-        // ============================================
-        // DASHBOARD
-        // ============================================
+        // =====================================================
+        // DASHBOARD (FIXED VALUES)
+        // =====================================================
         function loadDashboard() {
-            const activeMembers = DB.members.filter(m => m.status === 'active');
-            const pausedMembers = DB.members.filter(m => m.status === 'paused');
-            const today = new Date().toISOString().split('T')[0];
-            const todayAttendance = DB.attendance[today] || {};
+            const stats = DB.dashboardStats;
+            
+            // Display fixed dashboard stats
+            document.getElementById('totalMembers').textContent = stats.totalMembers;
+            document.getElementById('todayPresent').textContent = stats.presentToday;
+            document.getElementById('activeInside').textContent = stats.activeInside;
+            document.getElementById('pausedMembers').textContent = stats.pausedMembers;
+            document.getElementById('feesPending').textContent = stats.feePending;
+            document.getElementById('feesCollectedCount').textContent = stats.feeCollectedCount;
+            document.getElementById('feesCollected').textContent = '₹' + stats.totalFeeCollected.toLocaleString();
+            document.getElementById('activeMembers').textContent = DB.members.filter(m => m.status === 'active').length;
 
-            let presentCount = 0, absentCount = 0;
-            activeMembers.forEach(m => {
-                if (todayAttendance[m.id]?.present) presentCount++;
-                else absentCount++;
-            });
-
-            // Monthly attendance calculation
-            const thisMonth = new Date().toISOString().slice(0, 7);
-            let totalPresent = 0, totalDays = 0;
-            Object.keys(DB.attendance).forEach(date => {
-                if (date.startsWith(thisMonth)) {
-                    totalDays++;
-                    Object.values(DB.attendance[date]).forEach(a => { if (a.present) totalPresent++; });
-                }
-            });
-            const monthlyPercent = totalDays > 0 ? Math.round((totalPresent / (activeMembers.length * totalDays)) * 100) : 0;
-
-            const feesPending = DB.members.filter(m => m.status === 'active' && !m.feePaid).length;
-            const feesCollected = DB.members.filter(m => m.feePaid).reduce((sum, m) => sum + m.fee, 0);
-
-            document.getElementById('totalMembers').textContent = DB.members.length;
-            document.getElementById('todayPresent').textContent = presentCount;
-            document.getElementById('todayAbsent').textContent = absentCount;
-            document.getElementById('monthlyPercent').textContent = monthlyPercent + '%';
-            document.getElementById('activeMembers').textContent = activeMembers.length;
-            document.getElementById('pausedMembers').textContent = pausedMembers.length;
-            document.getElementById('feesPending').textContent = feesPending;
-            document.getElementById('feesCollected').textContent = '₹' + feesCollected.toLocaleString();
+            // Render currently inside gym table
+            renderInsideGym();
         }
 
-        // ============================================
+        function renderInsideGym() {
+            const insideMembers = DB.members.filter(m => m.isInside && m.status === 'active');
+            const tbody = document.getElementById('insideGymTableBody');
+            
+            if (insideMembers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div class="empty-state-text">No members currently inside</div></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = insideMembers.map(m => `
+                <tr>
+                    <td><span class="inside-indicator"></span><strong>${m.powerId}</strong></td>
+                    <td>${m.name}</td>
+                    <td>07:${String(Math.floor(Math.random() * 30) + 15).padStart(2, '0')}</td>
+                    <td>${m.package}</td>
+                </tr>
+            `).join('');
+        }
+
+        // =====================================================
         // MEMBERS MANAGEMENT
-        // ============================================
+        // =====================================================
         function renderMembers() {
             const search = document.getElementById('memberSearch').value.toLowerCase();
             const statusFilter = document.getElementById('memberStatusFilter').value;
@@ -1228,18 +1826,22 @@
                     <td><strong>${m.powerId}</strong></td>
                     <td>${m.name}</td>
                     <td>${m.phone || '-'}</td>
+                    <td>${m.package}</td>
+                    <td>${m.fitnessGoal}</td>
                     <td><span class="badge badge-${m.status}">${m.status.toUpperCase()}</span></td>
                     <td>${formatDate(m.joined)}</td>
                     <td>
-                        <button class="btn btn-sm btn-secondary" onclick="editMember('${m.id}')">Edit</button>
-                        ${m.status === 'active' ? `<button class="btn btn-sm btn-secondary" onclick="pauseMember('${m.id}')">Pause</button>` : ''}
-                        ${m.status === 'paused' ? `<button class="btn btn-sm btn-success" onclick="activateMember('${m.id}')">Activate</button>` : ''}
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-secondary" onclick="editMember('${m.id}')">Edit</button>
+                            ${m.status === 'active' ? `<button class="btn btn-sm btn-warning" onclick="pauseMember('${m.id}')">Pause</button>` : ''}
+                            ${m.status === 'paused' ? `<button class="btn btn-sm btn-success" onclick="activateMember('${m.id}')">Activate</button>` : ''}
+                        </div>
                     </td>
                 </tr>
             `).join('');
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-text">No members found</div></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="empty-state-text">No members found</div></td></tr>';
             }
         }
 
@@ -1258,6 +1860,8 @@
                     document.getElementById('memberName').value = m.name;
                     document.getElementById('memberPhone').value = m.phone;
                     document.getElementById('memberEmail').value = m.email;
+                    document.getElementById('memberPackage').value = m.package;
+                    document.getElementById('memberFitnessGoal').value = m.fitnessGoal;
                     document.getElementById('memberStatus').value = m.status;
                     document.getElementById('memberFee').value = m.fee;
                 }
@@ -1273,12 +1877,23 @@
 
         function pauseMember(id) {
             const m = DB.members.find(x => x.id === id);
-            if (m) { m.status = 'paused'; renderMembers(); showToast('Member paused'); }
+            if (m) {
+                m.status = 'paused';
+                m.isInside = false;
+                saveDatabase();
+                renderMembers();
+                showToast('Member paused');
+            }
         }
 
         function activateMember(id) {
             const m = DB.members.find(x => x.id === id);
-            if (m) { m.status = 'active'; renderMembers(); showToast('Member activated'); }
+            if (m) {
+                m.status = 'active';
+                saveDatabase();
+                renderMembers();
+                showToast('Member activated');
+            }
         }
 
         document.getElementById('memberForm').addEventListener('submit', (e) => {
@@ -1289,43 +1904,50 @@
                 name: document.getElementById('memberName').value.toUpperCase(),
                 phone: document.getElementById('memberPhone').value,
                 email: document.getElementById('memberEmail').value,
+                package: document.getElementById('memberPackage').value,
+                fitnessGoal: document.getElementById('memberFitnessGoal').value,
                 status: document.getElementById('memberStatus').value,
                 fee: parseInt(document.getElementById('memberFee').value) || 1000
             };
 
             if (id) {
                 const idx = DB.members.findIndex(x => x.id === id);
-                if (idx !== -1) DB.members[idx] = { ...DB.members[idx], ...data };
+                if (idx !== -1) {
+                    DB.members[idx] = { ...DB.members[idx], ...data };
+                }
                 showToast('Member updated');
             } else {
                 data.id = String(Date.now());
                 data.joined = new Date().toISOString().split('T')[0];
-                data.feePaid = false;
-                data.lastPayment = '';
-                data.notes = '';
+                data.lastPayment = new Date().toISOString().split('T')[0];
+                data.isInside = false;
                 DB.members.push(data);
+                // Update dashboard stats
+                DB.dashboardStats.totalMembers = DB.members.length;
                 showToast('Member added');
             }
 
+            saveDatabase();
             closeModal('memberModal');
             renderMembers();
         });
 
-        // ============================================
-        // ATTENDANCE MANAGEMENT
-        // ============================================
+        // =====================================================
+        // ATTENDANCE MANAGEMENT (OPTIMIZED)
+        // =====================================================
         function initAttendanceDate() {
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
         }
 
         function loadAttendance() {
             const date = document.getElementById('attendanceDate').value;
-            const view = document.getElementById('attendanceView').value;
-            const attendance = DB.attendance[date] || {};
+            if (!DB.attendance[date]) {
+                DB.attendance[date] = {};
+            }
+            const attendance = DB.attendance[date];
             const activeMembers = DB.members.filter(m => m.status === 'active');
 
             document.getElementById('attendanceTableTitle').textContent = `Attendance - ${formatDate(date)}`;
-
             renderAttendanceTable(activeMembers, attendance, date);
         }
 
@@ -1343,39 +1965,106 @@
             const tbody = document.getElementById('attendanceTableBody');
             tbody.innerHTML = filtered.map(m => {
                 const att = attendance[m.id] || { present: false, time: '-' };
+                const feeStatus = getFeeStatus(m);
                 return `
                     <tr>
                         <td><strong>${m.powerId}</strong></td>
                         <td>${m.name}</td>
+                        <td>${m.package}</td>
+                        <td><span class="badge badge-${feeStatus.status === 'Paid' ? 'paid' : 'pending'}">${feeStatus.status}</span></td>
                         <td><span class="badge badge-${att.present ? 'present' : 'absent'}">${att.present ? 'PRESENT' : 'ABSENT'}</span></td>
                         <td>${att.present ? att.time : '-'}</td>
                         <td>
                             <button class="btn btn-sm btn-${att.present ? 'danger' : 'success'}" onclick="toggleAttendance('${m.id}', '${date}', ${!att.present})">
-                                Mark ${att.present ? 'Absent' : 'Present'}
+                                ${att.present ? '✕ Absent' : '✓ Present'}
                             </button>
                         </td>
                     </tr>
                 `;
             }).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-state-text">No members found</div></td></tr>';
+            }
         }
 
         function filterAttendance() { loadAttendance(); }
 
-        function toggleAttendance(memberId, date, newStatus) {
-            const today = new Date().toISOString().split('T')[0];
-            const isPastDate = date < today;
+        function markAllPresent() {
+            const date = document.getElementById('attendanceDate').value;
+            if (!DB.attendance[date]) DB.attendance[date] = {};
+            const activeMembers = DB.members.filter(m => m.status === 'active');
+            const time = new Date().toTimeString().slice(0, 5);
+            
+            activeMembers.forEach(m => {
+                DB.attendance[date][m.id] = { present: true, time: time };
+            });
+            
+            saveDatabase();
+            loadAttendance();
+            showToast('All members marked present');
+        }
 
-            if (isPastDate && DB.settings.pastEditEnabled) {
-                const member = DB.members.find(m => m.id === memberId);
+        function markAllAbsent() {
+            const date = document.getElementById('attendanceDate').value;
+            if (!DB.attendance[date]) DB.attendance[date] = {};
+            const activeMembers = DB.members.filter(m => m.status === 'active');
+            
+            activeMembers.forEach(m => {
+                DB.attendance[date][m.id] = { present: false, time: '-' };
+            });
+            
+            saveDatabase();
+            loadAttendance();
+            showToast('All members marked absent');
+        }
+
+        function toggleAttendance(memberId, date, newStatus) {
+            const member = DB.members.find(m => m.id === memberId);
+            const feeStatus = getFeeStatus(member);
+            
+            // Check if fee is expired and trying to mark present
+            if (newStatus && feeStatus.status === 'Pending') {
                 pendingAttendanceEdit = { memberId, date, newStatus };
                 document.getElementById('attendanceEditDetails').innerHTML = `
                     <p><strong>Member:</strong> ${member?.name}</p>
                     <p><strong>Date:</strong> ${formatDate(date)}</p>
-                    <p><strong>New Status:</strong> ${newStatus ? 'PRESENT' : 'ABSENT'}</p>
+                    <p><strong>Package:</strong> ${member?.package}</p>
+                    <p><strong>Fee Due:</strong> ${formatDate(feeStatus.nextPayment)}</p>
                 `;
+                document.getElementById('feeExpiredWarning').style.display = 'block';
+                document.getElementById('attendanceModalFooter').style.display = 'none';
                 openModal('attendanceModal');
             } else {
                 applyAttendanceChange(memberId, date, newStatus);
+            }
+        }
+
+        function confirmAttendanceWithFeePaid() {
+            if (pendingAttendanceEdit) {
+                const { memberId, date, newStatus } = pendingAttendanceEdit;
+                // Mark attendance
+                applyAttendanceChange(memberId, date, newStatus);
+                // Mark fee as paid
+                const member = DB.members.find(m => m.id === memberId);
+                if (member) {
+                    member.lastPayment = new Date().toISOString().split('T')[0];
+                    saveDatabase();
+                }
+                pendingAttendanceEdit = null;
+                closeModal('attendanceModal');
+                resetAttendanceModal();
+                showToast('Attendance & Fee marked');
+            }
+        }
+
+        function confirmAttendanceOnly() {
+            if (pendingAttendanceEdit) {
+                const { memberId, date, newStatus } = pendingAttendanceEdit;
+                applyAttendanceChange(memberId, date, newStatus);
+                pendingAttendanceEdit = null;
+                closeModal('attendanceModal');
+                resetAttendanceModal();
             }
         }
 
@@ -1384,7 +2073,13 @@
                 applyAttendanceChange(pendingAttendanceEdit.memberId, pendingAttendanceEdit.date, pendingAttendanceEdit.newStatus);
                 pendingAttendanceEdit = null;
                 closeModal('attendanceModal');
+                resetAttendanceModal();
             }
+        }
+
+        function resetAttendanceModal() {
+            document.getElementById('feeExpiredWarning').style.display = 'none';
+            document.getElementById('attendanceModalFooter').style.display = 'flex';
         }
 
         function applyAttendanceChange(memberId, date, newStatus) {
@@ -1393,13 +2088,38 @@
                 present: newStatus,
                 time: newStatus ? new Date().toTimeString().slice(0, 5) : '-'
             };
+            saveDatabase();
             loadAttendance();
             showToast('Attendance updated');
         }
 
-        // ============================================
-        // FEES MANAGEMENT
-        // ============================================
+        // =====================================================
+        // FEES MANAGEMENT (ADVANCED LOGIC)
+        // =====================================================
+        
+        // Calculate fee status and next payment date
+        function getFeeStatus(member) {
+            if (!member.lastPayment) {
+                return { status: 'Pending', nextPayment: member.joined };
+            }
+            
+            const lastPayment = new Date(member.lastPayment);
+            const packageDays = PACKAGE_DAYS[member.package] || 30;
+            const nextPayment = new Date(lastPayment);
+            nextPayment.setDate(nextPayment.getDate() + packageDays);
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const status = today <= nextPayment ? 'Paid' : 'Pending';
+            
+            return {
+                status,
+                nextPayment: nextPayment.toISOString().split('T')[0],
+                daysOverdue: status === 'Pending' ? Math.floor((today - nextPayment) / (1000 * 60 * 60 * 24)) : 0
+            };
+        }
+
         function renderFees() {
             const search = document.getElementById('feeSearch').value.toLowerCase();
             const statusFilter = document.getElementById('feeStatusFilter').value;
@@ -1407,69 +2127,569 @@
             let filtered = DB.members.filter(m => {
                 if (m.status === 'left') return false;
                 const matchSearch = m.name.toLowerCase().includes(search) || m.powerId.includes(search);
-                const matchStatus = statusFilter === 'all' || (statusFilter === 'paid' && m.feePaid) || (statusFilter === 'unpaid' && !m.feePaid);
+                const feeStatus = getFeeStatus(m);
+                const matchStatus = statusFilter === 'all' || 
+                    (statusFilter === 'paid' && feeStatus.status === 'Paid') || 
+                    (statusFilter === 'pending' && feeStatus.status === 'Pending');
                 return matchSearch && matchStatus;
             });
 
             const tbody = document.getElementById('feesTableBody');
-            tbody.innerHTML = filtered.map(m => `
-                <tr>
-                    <td><strong>${m.powerId}</strong></td>
-                    <td>${m.name}</td>
-                    <td>₹${m.fee.toLocaleString()}</td>
-                    <td><span class="badge badge-${m.feePaid ? 'paid' : 'unpaid'}">${m.feePaid ? 'PAID' : 'UNPAID'}</span></td>
-                    <td>${m.lastPayment ? formatDate(m.lastPayment) : '-'}</td>
-                    <td>${m.notes || '-'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary" onclick="editFee('${m.id}')">Edit</button>
-                        ${!m.feePaid ? `<button class="btn btn-sm btn-success" onclick="markPaid('${m.id}')">Mark Paid</button>` : ''}
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = filtered.map(m => {
+                const feeStatus = getFeeStatus(m);
+                return `
+                    <tr>
+                        <td><strong>${m.powerId}</strong></td>
+                        <td>${m.name}</td>
+                        <td>${m.package}</td>
+                        <td>₹${m.fee.toLocaleString()}</td>
+                        <td>${m.lastPayment ? formatDate(m.lastPayment) : '-'}</td>
+                        <td>${formatDate(feeStatus.nextPayment)}</td>
+                        <td><span class="badge badge-${feeStatus.status === 'Paid' ? 'paid' : 'pending'}">${feeStatus.status}</span></td>
+                        <td>
+                            ${feeStatus.status === 'Pending' ? 
+                                `<button class="btn btn-sm btn-success" onclick="openFeeModal('${m.id}')">Mark Paid</button>` : 
+                                `<button class="btn btn-sm btn-secondary" onclick="openFeeModal('${m.id}')">Update</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="empty-state-text">No fee records found</div></td></tr>';
+            }
         }
 
         function filterFees() { renderFees(); }
 
-        function editFee(id) {
+        function openFeeModal(id) {
             const m = DB.members.find(x => x.id === id);
             if (m) {
                 document.getElementById('feeMemberId').value = m.id;
                 document.getElementById('feeMemberName').value = m.name;
-                document.getElementById('feeAmount').value = m.fee;
-                document.getElementById('feeStatus').value = m.feePaid ? 'paid' : 'unpaid';
-                document.getElementById('feeNotes').value = m.notes;
+                document.getElementById('feeMemberPackage').value = m.package;
+                document.getElementById('feePaymentDate').value = new Date().toISOString().split('T')[0];
                 openModal('feeModal');
-            }
-        }
-
-        function markPaid(id) {
-            const m = DB.members.find(x => x.id === id);
-            if (m) {
-                m.feePaid = true;
-                m.lastPayment = new Date().toISOString().split('T')[0];
-                renderFees();
-                showToast('Fee marked as paid');
             }
         }
 
         document.getElementById('feeForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('feeMemberId').value;
+            const paymentDate = document.getElementById('feePaymentDate').value;
+            
             const m = DB.members.find(x => x.id === id);
             if (m) {
-                m.fee = parseInt(document.getElementById('feeAmount').value);
-                m.feePaid = document.getElementById('feeStatus').value === 'paid';
-                m.notes = document.getElementById('feeNotes').value;
-                if (m.feePaid && !m.lastPayment) m.lastPayment = new Date().toISOString().split('T')[0];
+                m.lastPayment = paymentDate;
+                saveDatabase();
                 closeModal('feeModal');
                 renderFees();
-                showToast('Fee updated');
+                showToast('Fee payment recorded');
             }
         });
 
-        // ============================================
+        // =====================================================
+        // SUPPLEMENTS MANAGEMENT
+        // =====================================================
+        function renderSupplements() {
+            const search = document.getElementById('supplementSearch').value.toLowerCase();
+            
+            let filtered = DB.supplements.filter(s => 
+                s.name.toLowerCase().includes(search) || s.brand.toLowerCase().includes(search)
+            );
+
+            const tbody = document.getElementById('supplementsTableBody');
+            tbody.innerHTML = filtered.map(s => `
+                <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.brand}</td>
+                    <td>₹${s.price.toLocaleString()}</td>
+                    <td>${s.stock}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-secondary" onclick="editSupplement('${s.id}')">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSupplement('${s.id}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No supplements found</div></td></tr>';
+            }
+        }
+
+        function filterSupplements() { renderSupplements(); }
+
+        function openSupplementModal(id = null) {
+            document.getElementById('supplementModalTitle').textContent = id ? 'Edit Supplement' : 'Add Supplement';
+            document.getElementById('supplementForm').reset();
+            document.getElementById('supplementId').value = '';
+
+            if (id) {
+                const s = DB.supplements.find(x => x.id === id);
+                if (s) {
+                    document.getElementById('supplementId').value = s.id;
+                    document.getElementById('supplementName').value = s.name;
+                    document.getElementById('supplementBrand').value = s.brand;
+                    document.getElementById('supplementPrice').value = s.price;
+                    document.getElementById('supplementStock').value = s.stock;
+                }
+            }
+            openModal('supplementModal');
+        }
+
+        function editSupplement(id) { openSupplementModal(id); }
+
+        function deleteSupplement(id) {
+            if (confirm('Delete this supplement?')) {
+                DB.supplements = DB.supplements.filter(s => s.id !== id);
+                saveDatabase();
+                renderSupplements();
+                showToast('Supplement deleted');
+            }
+        }
+
+        document.getElementById('supplementForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('supplementId').value;
+            const data = {
+                name: document.getElementById('supplementName').value,
+                brand: document.getElementById('supplementBrand').value,
+                price: parseInt(document.getElementById('supplementPrice').value),
+                stock: parseInt(document.getElementById('supplementStock').value)
+            };
+
+            if (id) {
+                const idx = DB.supplements.findIndex(x => x.id === id);
+                if (idx !== -1) DB.supplements[idx] = { ...DB.supplements[idx], ...data };
+                showToast('Supplement updated');
+            } else {
+                data.id = String(Date.now());
+                DB.supplements.push(data);
+                showToast('Supplement added');
+            }
+
+            saveDatabase();
+            closeModal('supplementModal');
+            renderSupplements();
+        });
+
+        // =====================================================
+        // EQUIPMENT MANAGEMENT
+        // =====================================================
+        function renderEquipment() {
+            const search = document.getElementById('equipmentSearch').value.toLowerCase();
+            
+            let filtered = DB.equipment.filter(e => 
+                e.name.toLowerCase().includes(search) || e.type.toLowerCase().includes(search)
+            );
+
+            const tbody = document.getElementById('equipmentTableBody');
+            tbody.innerHTML = filtered.map(e => `
+                <tr>
+                    <td><strong>${e.name}</strong></td>
+                    <td>${e.type}</td>
+                    <td><span class="badge badge-${e.condition.toLowerCase()}">${e.condition}</span></td>
+                    <td>${e.quantity}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-secondary" onclick="editEquipment('${e.id}')">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteEquipment('${e.id}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No equipment found</div></td></tr>';
+            }
+        }
+
+        function filterEquipment() { renderEquipment(); }
+
+        function openEquipmentModal(id = null) {
+            document.getElementById('equipmentModalTitle').textContent = id ? 'Edit Equipment' : 'Add Equipment';
+            document.getElementById('equipmentForm').reset();
+            document.getElementById('equipmentId').value = '';
+
+            if (id) {
+                const e = DB.equipment.find(x => x.id === id);
+                if (e) {
+                    document.getElementById('equipmentId').value = e.id;
+                    document.getElementById('equipmentName').value = e.name;
+                    document.getElementById('equipmentType').value = e.type;
+                    document.getElementById('equipmentCondition').value = e.condition;
+                    document.getElementById('equipmentQuantity').value = e.quantity;
+                }
+            }
+            openModal('equipmentModal');
+        }
+
+        function editEquipment(id) { openEquipmentModal(id); }
+
+        function deleteEquipment(id) {
+            if (confirm('Delete this equipment?')) {
+                DB.equipment = DB.equipment.filter(e => e.id !== id);
+                saveDatabase();
+                renderEquipment();
+                showToast('Equipment deleted');
+            }
+        }
+
+        document.getElementById('equipmentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('equipmentId').value;
+            const data = {
+                name: document.getElementById('equipmentName').value,
+                type: document.getElementById('equipmentType').value,
+                condition: document.getElementById('equipmentCondition').value,
+                quantity: parseInt(document.getElementById('equipmentQuantity').value)
+            };
+
+            if (id) {
+                const idx = DB.equipment.findIndex(x => x.id === id);
+                if (idx !== -1) DB.equipment[idx] = { ...DB.equipment[idx], ...data };
+                showToast('Equipment updated');
+            } else {
+                data.id = String(Date.now());
+                DB.equipment.push(data);
+                showToast('Equipment added');
+            }
+
+            saveDatabase();
+            closeModal('equipmentModal');
+            renderEquipment();
+        });
+
+        // =====================================================
+        // SUPPLEMENT SALES MANAGEMENT
+        // =====================================================
+        function renderSales() {
+            const search = document.getElementById('salesSearch').value.toLowerCase();
+            
+            let filtered = DB.sales.filter(s => 
+                s.supplementName.toLowerCase().includes(search)
+            ).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Calculate monthly totals
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlySales = DB.sales.filter(s => s.date.startsWith(currentMonth));
+            const monthlyAmount = monthlySales.reduce((sum, s) => sum + s.totalAmount, 0);
+            const monthlyCount = monthlySales.reduce((sum, s) => sum + s.quantity, 0);
+
+            document.getElementById('monthlySalesAmount').textContent = '₹' + monthlyAmount.toLocaleString();
+            document.getElementById('monthlySalesCount').textContent = monthlyCount;
+
+            // Set default date range
+            const today = new Date();
+            const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('salesFromDate').value = document.getElementById('salesFromDate').value || firstOfMonth.toISOString().split('T')[0];
+            document.getElementById('salesToDate').value = document.getElementById('salesToDate').value || today.toISOString().split('T')[0];
+
+            const tbody = document.getElementById('salesTableBody');
+            tbody.innerHTML = filtered.map(s => `
+                <tr>
+                    <td>${formatDate(s.date)}</td>
+                    <td><strong>${s.supplementName}</strong></td>
+                    <td>${s.quantity}</td>
+                    <td>₹${s.unitPrice.toLocaleString()}</td>
+                    <td>₹${s.totalAmount.toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteSale('${s.id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-text">No sales records found</div></td></tr>';
+            }
+        }
+
+        function filterSales() { renderSales(); }
+
+        function openSaleModal() {
+            document.getElementById('saleForm').reset();
+            document.getElementById('saleDate').value = new Date().toISOString().split('T')[0];
+            
+            // Populate supplement dropdown
+            const select = document.getElementById('saleSupplementId');
+            select.innerHTML = '<option value="">Select Supplement</option>' + 
+                DB.supplements.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name} - ₹${s.price}</option>`).join('');
+            
+            openModal('saleModal');
+        }
+
+        function updateSalePrice() {
+            const select = document.getElementById('saleSupplementId');
+            const selected = select.options[select.selectedIndex];
+            const price = selected.dataset.price || 0;
+            document.getElementById('saleUnitPrice').value = price;
+            updateSaleTotal();
+        }
+
+        function updateSaleTotal() {
+            const quantity = parseInt(document.getElementById('saleQuantity').value) || 0;
+            const unitPrice = parseInt(document.getElementById('saleUnitPrice').value) || 0;
+            document.getElementById('saleTotalAmount').value = quantity * unitPrice;
+        }
+
+        function deleteSale(id) {
+            if (confirm('Delete this sale record?')) {
+                DB.sales = DB.sales.filter(s => s.id !== id);
+                saveDatabase();
+                renderSales();
+                showToast('Sale deleted');
+            }
+        }
+
+        document.getElementById('saleForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const supplementId = document.getElementById('saleSupplementId').value;
+            const supplement = DB.supplements.find(s => s.id === supplementId);
+            
+            if (!supplement) {
+                showToast('Please select a supplement', 'error');
+                return;
+            }
+
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            
+            // Check stock
+            if (quantity > supplement.stock) {
+                showToast('Insufficient stock!', 'error');
+                return;
+            }
+
+            const sale = {
+                id: String(Date.now()),
+                supplementId,
+                supplementName: supplement.name,
+                quantity,
+                unitPrice: supplement.price,
+                totalAmount: quantity * supplement.price,
+                date: document.getElementById('saleDate').value
+            };
+
+            DB.sales.push(sale);
+            
+            // Reduce stock
+            supplement.stock -= quantity;
+            
+            saveDatabase();
+            closeModal('saleModal');
+            renderSales();
+            showToast('Sale recorded');
+        });
+
+        // Export monthly sales report
+        function exportMonthlySalesReport() {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlySales = DB.sales.filter(s => s.date.startsWith(currentMonth));
+            
+            const data = monthlySales.map(s => ({
+                'Date': formatDate(s.date),
+                'Supplement': s.supplementName,
+                'Quantity': s.quantity,
+                'Unit Price': s.unitPrice,
+                'Total Amount': s.totalAmount
+            }));
+
+            // Add total row
+            const totalAmount = monthlySales.reduce((sum, s) => sum + s.totalAmount, 0);
+            data.push({
+                'Date': 'TOTAL',
+                'Supplement': '',
+                'Quantity': monthlySales.reduce((sum, s) => sum + s.quantity, 0),
+                'Unit Price': '',
+                'Total Amount': totalAmount
+            });
+
+            exportToExcel(data, `monthly_sales_${currentMonth}.xlsx`);
+        }
+
+        // Export custom date range report
+        function exportCustomSalesReport() {
+            const fromDate = document.getElementById('salesFromDate').value;
+            const toDate = document.getElementById('salesToDate').value;
+
+            if (!fromDate || !toDate) {
+                showToast('Please select date range', 'error');
+                return;
+            }
+
+            const filteredSales = DB.sales.filter(s => s.date >= fromDate && s.date <= toDate);
+            
+            const data = filteredSales.map(s => ({
+                'Date': formatDate(s.date),
+                'Supplement': s.supplementName,
+                'Quantity': s.quantity,
+                'Unit Price': s.unitPrice,
+                'Total Amount': s.totalAmount
+            }));
+
+            const totalAmount = filteredSales.reduce((sum, s) => sum + s.totalAmount, 0);
+            data.push({
+                'Date': 'TOTAL',
+                'Supplement': '',
+                'Quantity': filteredSales.reduce((sum, s) => sum + s.quantity, 0),
+                'Unit Price': '',
+                'Total Amount': totalAmount
+            });
+
+            exportToExcel(data, `sales_${fromDate}_to_${toDate}.xlsx`);
+        }
+
+        // =====================================================
+        // STAFF MANAGEMENT
+        // =====================================================
+        function renderStaff() {
+            const search = document.getElementById('staffSearch').value.toLowerCase();
+            const roleFilter = document.getElementById('staffRoleFilter').value;
+
+            let filtered = DB.staff.filter(s => {
+                const matchSearch = s.name.toLowerCase().includes(search) || s.phone.includes(search);
+                const matchRole = roleFilter === 'all' || s.role.toLowerCase() === roleFilter;
+                return matchSearch && matchRole;
+            });
+            const tbody = document.getElementById('staffTableBody');
+            tbody.innerHTML = filtered.map(s => `
+                <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.phone}</td>
+                    <td>${s.role}</td>
+                    <td>${s.trainingType || '-'}</td>
+                    <td>₹${s.salary.toLocaleString()}</td>
+                    <td>
+                        <span class="badge badge-${s.paymentStatus === 'paid' ? 'paid' : 'pending'}">
+                            ${s.paymentStatus.toUpperCase()}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-secondary" onclick="editStaff('${s.id}')">Edit</button>
+                            ${s.paymentStatus === 'pending' ? 
+                                `<button class="btn btn-sm btn-success" onclick="markStaffPaid('${s.id}')">Pay</button>` : 
+                                `<button class="btn btn-sm btn-warning" onclick="markStaffUnpaid('${s.id}')">Unpay</button>`
+                            }
+                            <button class="btn btn-sm btn-danger" onclick="deleteStaff('${s.id}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-state-text">No staff found</div></td></tr>';
+            }
+        }
+
+        function filterStaff() { renderStaff(); }
+
+        function toggleTrainingType() {
+            const role = document.getElementById('staffRole').value;
+            const trainingGroup = document.getElementById('trainingTypeGroup');
+            trainingGroup.style.display = role === 'Trainer' ? 'block' : 'none';
+            if (role !== 'Trainer') {
+                document.getElementById('staffTrainingType').value = '';
+            }
+        }
+
+        function openStaffModal(id = null) {
+            document.getElementById('staffModalTitle').textContent = id ? 'Edit Staff' : 'Add Staff';
+            document.getElementById('staffForm').reset();
+            document.getElementById('staffId').value = '';
+            document.getElementById('trainingTypeGroup').style.display = 'none';
+
+            if (id) {
+                const s = DB.staff.find(x => x.id === id);
+                if (s) {
+                    document.getElementById('staffId').value = s.id;
+                    document.getElementById('staffName').value = s.name;
+                    document.getElementById('staffPhone').value = s.phone;
+                    document.getElementById('staffRole').value = s.role;
+                    document.getElementById('staffTrainingType').value = s.trainingType || '';
+                    document.getElementById('staffSalary').value = s.salary;
+                    toggleTrainingType();
+                }
+            }
+            openModal('staffModal');
+        }
+
+        function editStaff(id) { openStaffModal(id); }
+
+        function deleteStaff(id) {
+            if (confirm('Delete this staff member?')) {
+                DB.staff = DB.staff.filter(s => s.id !== id);
+                saveDatabase();
+                renderStaff();
+                showToast('Staff deleted');
+            }
+        }
+
+        function markStaffPaid(id) {
+            const s = DB.staff.find(x => x.id === id);
+            if (s) {
+                s.paymentStatus = 'paid';
+                saveDatabase();
+                renderStaff();
+                showToast('Salary marked as paid');
+            }
+        }
+
+        function markStaffUnpaid(id) {
+            const s = DB.staff.find(x => x.id === id);
+            if (s) {
+                s.paymentStatus = 'pending';
+                saveDatabase();
+                renderStaff();
+                showToast('Salary marked as pending');
+            }
+        }
+
+        document.getElementById('staffForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('staffId').value;
+            const data = {
+                name: document.getElementById('staffName').value.toUpperCase(),
+                phone: document.getElementById('staffPhone').value,
+                role: document.getElementById('staffRole').value,
+                trainingType: document.getElementById('staffRole').value === 'Trainer' ? 
+                    document.getElementById('staffTrainingType').value : '',
+                salary: parseInt(document.getElementById('staffSalary').value)
+            };
+
+            if (id) {
+                const idx = DB.staff.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    DB.staff[idx] = { ...DB.staff[idx], ...data };
+                }
+                showToast('Staff updated');
+            } else {
+                data.id = String(Date.now());
+                data.paymentStatus = 'pending';
+                DB.staff.push(data);
+                showToast('Staff added');
+            }
+
+            saveDatabase();
+            closeModal('staffModal');
+            renderStaff();
+        });
+
+        // =====================================================
         // EXCEL IMPORT / EXPORT
-        // ============================================
+        // =====================================================
+        
+        // Generic Excel export function
+        function exportToExcel(data, filename) {
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data');
+            XLSX.writeFile(wb, filename);
+            showToast('Excel exported successfully');
+        }
+
         function importExcel(type, input) {
             const file = input.files[0];
             if (!file) return;
@@ -1484,11 +2704,11 @@
 
                     if (type === 'members') importMembers(json);
                     else if (type === 'attendance') importAttendanceData(json);
-                    else if (type === 'fees') importFeesData(json);
 
                     showToast(`${type} imported successfully`);
                 } catch (err) {
                     showToast('Invalid Excel file', 'error');
+                    console.error(err);
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -1498,80 +2718,166 @@
         function importMembers(data) {
             data.forEach(row => {
                 if (row.Name || row.name) {
-                    DB.members.push({
+                    const newMember = {
                         id: String(Date.now() + Math.random()),
-                        powerId: row.PowerID || row.powerId || String(DB.members.length + 1).padStart(3, '0'),
+                        powerId: row['Power ID'] || row.PowerID || row.powerId || String(DB.members.length + 1).padStart(3, '0'),
                         name: (row.Name || row.name).toUpperCase(),
                         phone: row.Phone || row.phone || '',
                         email: row.Email || row.email || '',
-                        status: row.Status || 'active',
-                        fee: row.Fee || 1000,
-                        feePaid: false,
-                        lastPayment: '',
-                        joined: new Date().toISOString().split('T')[0],
-                        notes: ''
-                    });
+                        status: (row.Status || 'active').toLowerCase(),
+                        fee: parseInt(row.Fee || row.fee) || 1000,
+                        package: row.Package || row.package || '1 Month',
+                        fitnessGoal: row['Fitness Goal'] || row.fitnessGoal || 'Cardio',
+                        lastPayment: row['Last Payment'] || new Date().toISOString().split('T')[0],
+                        joined: row.Joined || new Date().toISOString().split('T')[0],
+                        isInside: false
+                    };
+                    DB.members.push(newMember);
                 }
             });
+            DB.dashboardStats.totalMembers = DB.members.length;
+            saveDatabase();
             renderMembers();
         }
 
-        function importAttendanceData(data) { /* Implement based on your format */ }
-        function importFeesData(data) { /* Implement based on your format */ }
+        function importAttendanceData(data) {
+            // Import attendance data from Excel
+            data.forEach(row => {
+                const date = row.Date || new Date().toISOString().split('T')[0];
+                const powerId = row['Power ID'] || row.PowerID;
+                const status = (row.Status || '').toLowerCase();
+                
+                if (powerId) {
+                    const member = DB.members.find(m => m.powerId === powerId);
+                    if (member) {
+                        if (!DB.attendance[date]) DB.attendance[date] = {};
+                        DB.attendance[date][member.id] = {
+                            present: status === 'present',
+                            time: row.Time || '-'
+                        };
+                    }
+                }
+            });
+            saveDatabase();
+            loadAttendance();
+        }
 
         function exportExcel(type) {
             let data = [], filename = '';
 
-            if (type === 'members') {
-                data = DB.members.map(m => ({
-                    'Power ID': m.powerId, 'Name': m.name, 'Phone': m.phone,
-                    'Email': m.email, 'Status': m.status, 'Fee': m.fee, 'Joined': m.joined
-                }));
-                filename = 'members.xlsx';
-            } else if (type === 'daily-attendance') {
-                const date = new Date().toISOString().split('T')[0];
-                const att = DB.attendance[date] || {};
-                data = DB.members.filter(m => m.status === 'active').map(m => ({
-                    'Power ID': m.powerId, 'Name': m.name,
-                    'Status': att[m.id]?.present ? 'Present' : 'Absent',
-                    'Time': att[m.id]?.time || '-'
-                }));
-                filename = `attendance_${date}.xlsx`;
-            } else if (type === 'monthly-attendance' || type === 'monthly-report') {
-                const month = document.getElementById('reportMonth')?.value || new Date().toISOString().slice(0, 7);
-                data = DB.members.filter(m => m.status !== 'left').map(m => {
-                    let present = 0, total = 0;
-                    Object.keys(DB.attendance).forEach(date => {
-                        if (date.startsWith(month)) {
-                            total++;
-                            if (DB.attendance[date][m.id]?.present) present++;
-                        }
+            switch(type) {
+                case 'members':
+                    data = DB.members.map(m => ({
+                        'Power ID': m.powerId,
+                        'Name': m.name,
+                        'Phone': m.phone,
+                        'Email': m.email,
+                        'Package': m.package,
+                        'Fitness Goal': m.fitnessGoal,
+                        'Status': m.status,
+                        'Fee': m.fee,
+                        'Joined': m.joined
+                    }));
+                    filename = 'members.xlsx';
+                    break;
+
+                case 'daily-attendance':
+                    const date = document.getElementById('attendanceDate')?.value || new Date().toISOString().split('T')[0];
+                    const att = DB.attendance[date] || {};
+                    data = DB.members.filter(m => m.status === 'active').map(m => ({
+                        'Power ID': m.powerId,
+                        'Name': m.name,
+                        'Package': m.package,
+                        'Status': att[m.id]?.present ? 'Present' : 'Absent',
+                        'Time': att[m.id]?.time || '-'
+                    }));
+                    filename = `attendance_${date}.xlsx`;
+                    break;
+
+                case 'monthly-attendance':
+                case 'monthly-report':
+                    const month = document.getElementById('reportMonth')?.value || new Date().toISOString().slice(0, 7);
+                    data = DB.members.filter(m => m.status !== 'left').map(m => {
+                        let present = 0, total = 0;
+                        Object.keys(DB.attendance).forEach(d => {
+                            if (d.startsWith(month)) {
+                                total++;
+                                if (DB.attendance[d][m.id]?.present) present++;
+                            }
+                        });
+                        return {
+                            'Power ID': m.powerId,
+                            'Name': m.name,
+                            'Package': m.package,
+                            'Present Days': present,
+                            'Total Days': total,
+                            'Attendance %': total > 0 ? Math.round((present / total) * 100) + '%' : '0%'
+                        };
                     });
-                    return {
-                        'Power ID': m.powerId, 'Name': m.name,
-                        'Present Days': present, 'Total Days': total,
-                        'Attendance %': total > 0 ? Math.round((present / total) * 100) + '%' : '0%'
-                    };
-                });
-                filename = `monthly_attendance_${month}.xlsx`;
-            } else if (type === 'fees-pending' || type === 'fees-report') {
-                data = DB.members.filter(m => m.status !== 'left' && !m.feePaid).map(m => ({
-                    'Power ID': m.powerId, 'Name': m.name, 'Fee': m.fee,
-                    'Last Payment': m.lastPayment || 'Never', 'Notes': m.notes
-                }));
-                filename = 'fees_pending.xlsx';
+                    filename = `monthly_attendance_${month}.xlsx`;
+                    break;
+
+                case 'fees-pending':
+                case 'fees-report':
+                    data = DB.members.filter(m => m.status !== 'left').map(m => {
+                        const feeStatus = getFeeStatus(m);
+                        return {
+                            'Power ID': m.powerId,
+                            'Name': m.name,
+                            'Package': m.package,
+                            'Fee': m.fee,
+                            'Last Payment': m.lastPayment || 'Never',
+                            'Next Payment': feeStatus.nextPayment,
+                            'Status': feeStatus.status,
+                            'Days Overdue': feeStatus.daysOverdue
+                        };
+                    });
+                    filename = 'fees_report.xlsx';
+                    break;
+
+                case 'supplements':
+                    data = DB.supplements.map(s => ({
+                        'Name': s.name,
+                        'Brand': s.brand,
+                        'Price': s.price,
+                        'Stock': s.stock
+                    }));
+                    filename = 'supplements.xlsx';
+                    break;
+
+                case 'equipment':
+                    data = DB.equipment.map(e => ({
+                        'Name': e.name,
+                        'Type': e.type,
+                        'Condition': e.condition,
+                        'Quantity': e.quantity
+                    }));
+                    filename = 'equipment.xlsx';
+                    break;
+
+                case 'staff':
+                    data = DB.staff.map(s => ({
+                        'Name': s.name,
+                        'Phone': s.phone,
+                        'Role': s.role,
+                        'Training Type': s.trainingType || '-',
+                        'Salary': s.salary,
+                        'Payment Status': s.paymentStatus
+                    }));
+                    filename = 'staff.xlsx';
+                    break;
+
+                default:
+                    showToast('Unknown export type', 'error');
+                    return;
             }
 
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Data');
-            XLSX.writeFile(wb, filename);
-            showToast('Excel exported');
+            exportToExcel(data, filename);
         }
 
-        // ============================================
+        // =====================================================
         // REPORTS
-        // ============================================
+        // =====================================================
         function initReportMonth() {
             document.getElementById('reportMonth').value = new Date().toISOString().slice(0, 7);
         }
@@ -1608,70 +2914,83 @@
                     <td>${m.percent}%</td>
                 </tr>
             `).join('');
+
+            if (reportData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No data available</div></td></tr>';
+            }
         }
 
         function generateFeesReport() {
             const tbody = document.getElementById('feesReportBody');
             const today = new Date();
 
-            const reportData = DB.members.filter(m => m.status !== 'left' && !m.feePaid).map(m => {
-                const lastDate = m.lastPayment ? new Date(m.lastPayment) : new Date(m.joined);
-                const overdue = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-                return { ...m, overdue };
-            });
+            const reportData = DB.members.filter(m => m.status !== 'left').map(m => {
+                const feeStatus = getFeeStatus(m);
+                return { ...m, ...feeStatus };
+            }).filter(m => m.status === 'Pending');
 
             tbody.innerHTML = reportData.map(m => `
                 <tr>
                     <td><strong>${m.powerId}</strong></td>
                     <td>${m.name}</td>
+                    <td>${m.package}</td>
                     <td>₹${m.fee.toLocaleString()}</td>
-                    <td><span class="badge badge-unpaid">UNPAID</span></td>
-                    <td style="color: var(--danger)">${m.overdue} days</td>
+                    <td><span class="badge badge-pending">PENDING</span></td>
+                    <td style="color: var(--danger)">${m.daysOverdue} days</td>
                 </tr>
             `).join('');
 
             if (reportData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No pending fees</div></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-text">No pending fees</div></td></tr>';
             }
         }
 
-        // ============================================
+        // =====================================================
         // SETTINGS
-        // ============================================
+        // =====================================================
         function loadSettings() {
             document.getElementById('gymName').value = DB.settings.gymName;
             document.getElementById('defaultFee').value = DB.settings.defaultFee;
-            document.getElementById('lockDays').value = DB.settings.lockDays;
             document.getElementById('togglePastEdit').classList.toggle('active', DB.settings.pastEditEnabled);
-            document.getElementById('toggleKiosk').classList.toggle('active', DB.settings.kioskMode);
+            document.getElementById('toggleAutoFeePaid').classList.toggle('active', DB.settings.autoFeePaid);
             document.getElementById('toggleAutoId').classList.toggle('active', DB.settings.autoId);
         }
 
         function toggleSetting(setting) {
-            if (setting === 'pastEdit') {
-                DB.settings.pastEditEnabled = !DB.settings.pastEditEnabled;
-                document.getElementById('togglePastEdit').classList.toggle('active');
-            } else if (setting === 'kiosk') {
-                DB.settings.kioskMode = !DB.settings.kioskMode;
-                document.getElementById('toggleKiosk').classList.toggle('active');
-            } else if (setting === 'autoId') {
-                DB.settings.autoId = !DB.settings.autoId;
-                document.getElementById('toggleAutoId').classList.toggle('active');
+            switch(setting) {
+                case 'pastEdit':
+                    DB.settings.pastEditEnabled = !DB.settings.pastEditEnabled;
+                    document.getElementById('togglePastEdit').classList.toggle('active');
+                    break;
+                case 'autoFeePaid':
+                    DB.settings.autoFeePaid = !DB.settings.autoFeePaid;
+                    document.getElementById('toggleAutoFeePaid').classList.toggle('active');
+                    break;
+                case 'autoId':
+                    DB.settings.autoId = !DB.settings.autoId;
+                    document.getElementById('toggleAutoId').classList.toggle('active');
+                    break;
             }
+            saveDatabase();
         }
 
         function saveSettings() {
             DB.settings.gymName = document.getElementById('gymName').value;
             DB.settings.defaultFee = parseInt(document.getElementById('defaultFee').value);
-            DB.settings.lockDays = parseInt(document.getElementById('lockDays').value);
+            saveDatabase();
             showToast('Settings saved');
         }
 
-        // ============================================
-        // UTILITIES
-        // ============================================
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        // =====================================================
+        // UTILITY FUNCTIONS
+        // =====================================================
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
 
         function formatDate(dateStr) {
             if (!dateStr) return '-';
@@ -1687,43 +3006,20 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // ============================================
-        // FIREBASE INTEGRATION PLACEHOLDER
-        // ============================================
-        /*
-        // Initialize Firebase (replace with your config)
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Firebase Security Rules (set in Firebase Console):
-        // {
-        //   "rules": {
-        //     "members": { ".read": "auth != null && auth.token.role == 'owner'", ".write": "auth != null && auth.token.role == 'owner'" },
-        //     "attendance": { ".read": "auth != null && auth.token.role == 'owner'", ".write": "auth != null && auth.token.role == 'owner'" },
-        //     "settings": { ".read": "auth != null && auth.token.role == 'owner'", ".write": "auth != null && auth.token.role == 'owner'" }
-        //   }
-        // }
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Replace DB operations with Firestore calls:
-        // db.collection('members').get() - Read members
-        // db.collection('members').add(data) - Add member
-        // db.collection('members').doc(id).update(data) - Update member
-        // db.collection('attendance').doc(date).set(data) - Save attendance
-        */
-
-        // ============================================
+        // =====================================================
         // INITIALIZATION
-        // ============================================
+        // =====================================================
+        
+        // Load database from localStorage
+        loadDatabase();
+        
+        // Initialize dashboard
         loadDashboard();
+
+        // Log initialization
+        console.log('GYM Admin Panel initialized successfully');
+        console.log('Total Members:', DB.members.length);
+        console.log('Dashboard Stats:', DB.dashboardStats);
     </script>
 </body>
 </html>
