@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Zumba Attendance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 50%, #0f0f1f 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .header {
+            padding: 40px 20px 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 105, 180, 0.15);
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 105, 180, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255, 107, 157, 0.2);
+            border-color: #ff6b9d;
+            color: #ff6b9d;
+        }
+
+        .fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .fullscreen-btn .exit-icon,
+        .fullscreen-btn .exit-text {
+            display: none;
+        }
+
+        body.fullscreen-mode .fullscreen-btn .enter-icon,
+        body.fullscreen-mode .fullscreen-btn .enter-text {
+            display: none;
+        }
+
+        body.fullscreen-mode .fullscreen-btn .exit-icon,
+        body.fullscreen-mode .fullscreen-btn .exit-text {
+            display: inline;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .zumba-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569, #ff4081);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(255, 107, 157, 0.5), 0 0 20px rgba(255, 64, 129, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .zumba-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .zumba-icon svg {
+            width: 50px;
+            height: 50px;
+            z-index: 1;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(255, 107, 157, 0.3);
+        }
+
+        .search-wrapper {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 16px 20px 16px 54px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 105, 180, 0.2);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #ff6b9d;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 107, 157, 0.2);
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            fill: rgba(255, 255, 255, 0.4);
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 24px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff6b9d;
+        }
+
+        .stat-value.present {
+            color: #2ed573;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .members-section {
+            padding: 40px 20px 60px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .member-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 105, 180, 0.12);
+            border-radius: 20px;
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .member-card:hover {
+            border-color: rgba(255, 105, 180, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .member-card.present {
+            background: linear-gradient(135deg, rgba(46, 213, 115, 0.1), rgba(46, 213, 115, 0.03));
+            border-color: rgba(46, 213, 115, 0.25);
+        }
+
+        .member-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .member-avatar {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.2), rgba(196, 69, 105, 0.2));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ff6b9d;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .member-card.present .member-avatar {
+            background: linear-gradient(135deg, rgba(46, 213, 115, 0.2), rgba(38, 222, 129, 0.2));
+            color: #2ed573;
+        }
+
+        .member-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .member-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .member-zid {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .member-zid span {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+
+        .member-card.present .member-zid span {
+            color: #2ed573;
+        }
+
+        .toggle-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-btn.absent {
+            background: rgba(255, 107, 157, 0.15);
+            color: #ff6b9d;
+            border: 2px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .toggle-btn.absent:hover {
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+            transform: scale(1.02);
+        }
+
+        .toggle-btn.present {
+            background: linear-gradient(135deg, #2ed573, #26de81);
+            color: #fff;
+            border: 2px solid transparent;
+            box-shadow: 0 6px 20px rgba(46, 213, 115, 0.35);
+        }
+
+        .toggle-btn.present:hover {
+            box-shadow: 0 8px 30px rgba(46, 213, 115, 0.5);
+            transform: scale(1.02);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .no-results svg {
+            width: 80px;
+            height: 80px;
+            fill: rgba(255, 255, 255, 0.15);
+            margin-bottom: 20px;
+        }
+
+        .no-results p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1a1a2e, #0d0d1a);
+            border: 2px solid rgba(255, 105, 180, 0.3);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.8) translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.show .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(46, 213, 115, 0.2), rgba(46, 213, 115, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .modal-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: #2ed573;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .modal-message strong {
+            color: #2ed573;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-btn.save {
+            background: linear-gradient(135deg, #2ed573, #26de81);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(46, 213, 115, 0.4);
+        }
+
+        .modal-btn.save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(46, 213, 115, 0.5);
+        }
+
+        .modal-btn.later {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-btn.later:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 16px 32px;
+            background: rgba(46, 213, 115, 0.95);
+            color: #fff;
+            border-radius: 14px;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.4s ease;
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 30px 16px 24px;
+            }
+
+            .fullscreen-btn {
+                top: 16px;
+                right: 16px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .fullscreen-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .title-row {
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .zumba-icon {
+                width: 56px;
+                height: 56px;
+                border-radius: 14px;
+            }
+
+            .zumba-icon svg {
+                width: 38px;
+                height: 38px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .stats-row {
+                gap: 30px;
+                margin-top: 20px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .members-section {
+                padding: 24px 16px 40px;
+            }
+
+            .members-list {
+                gap: 12px;
+            }
+
+            .member-card {
+                padding: 18px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .member-info {
+                width: 100%;
+            }
+
+            .member-avatar {
+                width: 48px;
+                height: 48px;
+                font-size: 18px;
+            }
+
+            .member-name {
+                font-size: 18px;
+            }
+
+            .toggle-btn {
+                width: 100%;
+                padding: 14px 20px;
+            }
+
+            .modal-box {
+                padding: 32px 24px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <button class="fullscreen-btn" onclick="toggleFullscreen()">
+            <svg class="enter-icon" viewBox="0 0 24 24">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+            <svg class="exit-icon" viewBox="0 0 24 24">
+                <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+            </svg>
+            <span class="enter-text">Fullscreen</span>
+            <span class="exit-text">Exit</span>
+        </button>
+
+        <div class="title-row">
+            <div class="zumba-icon">
+                <!-- Dynamic Dancing Figure Logo -->
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Head -->
+                    <circle cx="32" cy="12" r="7" fill="white"/>
+                    
+                    <!-- Hair/Energy lines -->
+                    <path d="M26 8C24 5 26 2 30 3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M38 8C40 5 38 2 34 3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    
+                    <!-- Body - Dynamic dance pose -->
+                    <path d="M32 19V32" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    
+                    <!-- Left arm raised up -->
+                    <path d="M32 22C28 20 22 14 18 10" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    
+                    <!-- Right arm extended out -->
+                    <path d="M32 24C36 22 44 24 50 20" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    
+                    <!-- Left leg bent -->
+                    <path d="M32 32C28 38 22 42 16 48" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    
+                    <!-- Right leg extended -->
+                    <path d="M32 32C38 40 46 46 52 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    
+                    <!-- Energy/Motion lines -->
+                    <path d="M10 16C8 16 6 14 6 12" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M8 24C6 24 4 22 3 20" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+                    
+                    <path d="M54 14C56 14 58 12 58 10" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M56 22C58 22 60 20 61 18" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+                    
+                    <!-- Sparkle effects -->
+                    <circle cx="14" cy="8" r="2" fill="rgba(255,255,255,0.7)"/>
+                    <circle cx="50" cy="8" r="1.5" fill="rgba(255,255,255,0.5)"/>
+                    <circle cx="8" cy="32" r="1.5" fill="rgba(255,255,255,0.4)"/>
+                    <circle cx="56" cy="30" r="2" fill="rgba(255,255,255,0.6)"/>
+                    
+                    <!-- Music notes -->
+                    <path d="M58 38V46M58 38C58 36 62 36 62 38C62 40 58 40 58 38Z" fill="rgba(255,255,255,0.5)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                    <path d="M6 42V50M6 42C6 40 10 40 10 42C10 44 6 44 6 42Z" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <h1>Zumba Attendance</h1>
+        </div>
+
+        <div class="search-wrapper">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search by name or ZID...">
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value present" id="presentCount">0</div>
+                <div class="stat-label">Present</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="members-section">
+        <div class="members-list" id="membersList"></div>
+    </main>
+
+    <!-- Save Attendance Modal -->
+    <div class="modal-overlay" id="saveModal">
+        <div class="modal-box">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+            </div>
+            <h3 class="modal-title">Attendance Marked!</h3>
+            <p class="modal-message">
+                <strong id="markedName">Member</strong> has been marked as present.<br>
+                Would you like to save the attendance now?
+            </p>
+            <div class="modal-buttons">
+                <button class="modal-btn later" onclick="closeModal()">Later</button>
+                <button class="modal-btn save" onclick="saveAndClose()">Save Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        <span>Attendance saved successfully!</span>
+    </div>
+
+    <script>
+        const members = [
+            { zid: '001', name: 'Ananya Sharma', present: false },
+            { zid: '002', name: 'Pooja Verma', present: false },
+            { zid: '003', name: 'Neha Gupta', present: false },
+            { zid: '004', name: 'Riya Patel', present: false },
+            { zid: '005', name: 'Kavya Singh', present: false },
+            { zid: '006', name: 'Priya Mehta', present: false },
+            { zid: '007', name: 'Sneha Reddy', present: false },
+            { zid: '008', name: 'Aarti Joshi', present: false },
+            { zid: '009', name: 'Nisha Kapoor', present: false },
+            { zid: '010', name: 'Shreya Das', present: false },
+            { zid: '011', name: 'Simran Kaur', present: false },
+            { zid: '012', name: 'Ankita Roy', present: false },
+            { zid: '013', name: 'Radhika Nair', present: false },
+            { zid: '014', name: 'Mehak Batra', present: false },
+            { zid: '015', name: 'Isha Malhotra', present: false },
+            { zid: '016', name: 'Sakshi Thakur', present: false },
+            { zid: '017', name: 'Palak Agarwal', present: false },
+            { zid: '018', name: 'Tanvi Bhatt', present: false },
+            { zid: '019', name: 'Muskan Shah', present: false },
+            { zid: '020', name: 'Preeti Rao', present: false }
+        ];
+
+        const membersList = document.getElementById('membersList');
+        const searchInput = document.getElementById('searchInput');
+        const totalCountEl = document.getElementById('totalCount');
+        const presentCountEl = document.getElementById('presentCount');
+        const saveModal = document.getElementById('saveModal');
+        const toast = document.getElementById('toast');
+        const markedNameEl = document.getElementById('markedName');
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('fullscreenchange', updateFullscreenState);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenState);
+
+        function updateFullscreenState() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                document.body.classList.add('fullscreen-mode');
+            } else {
+                document.body.classList.remove('fullscreen-mode');
+            }
+        }
+
+        function loadAttendance() {
+            const saved = localStorage.getItem('zumbaAttendance');
+            if (saved) {
+                const savedData = JSON.parse(saved);
+                for (let i = 0; i < members.length; i++) {
+                    if (savedData[members[i].zid] !== undefined) {
+                        members[i].present = savedData[members[i].zid];
+                    }
+                }
+            }
+        }
+
+        function saveAttendance() {
+            const attendanceData = {};
+            for (let i = 0; i < members.length; i++) {
+                attendanceData[members[i].zid] = members[i].present;
+            }
+            localStorage.setItem('zumbaAttendance', JSON.stringify(attendanceData));
+            localStorage.setItem('zumbaAttendanceDate', new Date().toLocaleDateString());
+        }
+
+        function showModal(memberName) {
+            markedNameEl.textContent = memberName;
+            saveModal.classList.add('show');
+        }
+
+        function closeModal() {
+            saveModal.classList.remove('show');
+        }
+
+        function saveAndClose() {
+            saveAttendance();
+            closeModal();
+            toast.classList.add('show');
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function getInitials(name) {
+            const parts = name.split(' ');
+            if (parts.length >= 2) {
+                return parts[0][0] + parts[1][0];
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function renderMembers(list) {
+            if (list.length === 0) {
+                membersList.innerHTML = 
+                    '<div class="no-results">' +
+                        '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2v-2zm0-10h2v8h-2V7z"/></svg>' +
+                        '<p>No members found matching your search</p>' +
+                    '</div>';
+                return;
+            }
+
+            let html = '';
+            for (let i = 0; i < list.length; i++) {
+                const m = list[i];
+                const initials = getInitials(m.name);
+                html += 
+                    '<div class="member-card' + (m.present ? ' present' : '') + '" data-zid="' + m.zid + '">' +
+                        '<div class="member-info">' +
+                            '<div class="member-avatar">' + initials + '</div>' +
+                            '<div class="member-details">' +
+                                '<div class="member-name">' + m.name + '</div>' +
+                                '<div class="member-zid">ZID: <span>' + m.zid + '</span></div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<button class="toggle-btn ' + (m.present ? 'present' : 'absent') + '" onclick="toggleAttendance(\'' + m.zid + '\')">' +
+                            (m.present ? 'Present' : 'Absent') +
+                        '</button>' +
+                    '</div>';
+            }
+            membersList.innerHTML = html;
+        }
+
+        function updateStats() {
+            totalCountEl.textContent = members.length;
+            let count = 0;
+            for (let i = 0; i < members.length; i++) {
+                if (members[i].present) count++;
+            }
+            presentCountEl.textContent = count;
+        }
+
+        function toggleAttendance(zid) {
+            let member = null;
+            for (let i = 0; i < members.length; i++) {
+                if (members[i].zid === zid) {
+                    member = members[i];
+                    break;
+                }
+            }
+            if (!member) return;
+
+            member.present = !member.present;
+
+            const card = document.querySelector('[data-zid="' + zid + '"]');
+            if (card) {
+                if (member.present) {
+                    card.classList.add('present');
+                } else {
+                    card.classList.remove('present');
+                }
+
+                const btn = card.querySelector('.toggle-btn');
+                btn.className = 'toggle-btn ' + (member.present ? 'present' : 'absent');
+                btn.textContent = member.present ? 'Present' : 'Absent';
+
+                const avatar = card.querySelector('.member-avatar');
+                avatar.style.transform = 'scale(1.1)';
+                setTimeout(function() {
+                    avatar.style.transform = 'scale(1)';
+                }, 200);
+            }
+
+            updateStats();
+
+            if (member.present) {
+                showModal(member.name);
+            }
+        }
+
+        function filterMembers(term) {
+            if (!term || term.trim() === '') {
+                return members;
+            }
+            const search = term.trim().toLowerCase();
+            let results = [];
+            for (let i = 0; i < members.length; i++) {
+                if (members[i].zid.toLowerCase().indexOf(search) !== -1 ||
+                    members[i].name.toLowerCase().indexOf(search) !== -1) {
+                    results.push(members[i]);
+                }
+            }
+            return results;
+        }
+
+        searchInput.addEventListener('input', function(e) {
+            renderMembers(filterMembers(e.target.value));
+        });
+
+        saveModal.addEventListener('click', function(e) {
+            if (e.target === saveModal) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        loadAttendance();
+        renderMembers(members);
+        updateStats();
+    </script>
+</body>
+</html>
