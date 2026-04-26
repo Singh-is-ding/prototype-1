@@ -1,0 +1,390 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fees</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0b0b;color:white;font-family:'Inter',sans-serif;}
+.container{padding:30px;}
+.title{font-size:22px;font-weight:600;}
+.subtitle{color:#9ca3af;margin-top:4px;font-size:14px;}
+.filters{margin-top:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+select,input[type=text],input[type=number],input[type=date]{background:#111;border:1px solid #2a2a2a;color:white;padding:10px 14px;border-radius:8px;outline:none;font-family:inherit;}
+input[type=text]{width:220px;}
+.card{margin-top:20px;background:#151515;border:1px solid #2a2a2a;border-radius:12px;overflow:hidden;}
+.card-header{padding:16px 20px;font-weight:500;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;align-items:center;}
+.stat-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.pill{background:#151515;border:1px solid #2a2a2a;border-radius:8px;padding:10px 18px;font-size:13px;}
+.pill span{font-weight:700;font-size:16px;display:block;margin-bottom:2px;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+.table-wrap{overflow-x:auto;}
+th{text-align:left;padding:12px 16px;font-size:11px;color:#9ca3af;background:#111;white-space:nowrap;}
+td{padding:14px 16px;border-top:1px solid #2a2a2a;font-size:13px;vertical-align:middle;}
+tr:hover{background:#1a1a1a;}
+.loading{padding:40px;text-align:center;color:#9ca3af;}
+.loader{width:14px;height:14px;border:2px solid #3b82f6;border-top:2px solid transparent;border-radius:50%;display:inline-block;animation:spin 1s linear infinite;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+.badge-paid{background:rgba(34,197,94,0.15);color:#22c55e;}
+.badge-pending{background:rgba(239,68,68,0.15);color:#ef4444;}
+.badge-overdue{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.btn-mark{background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;transition:background 0.15s;}
+.btn-mark:hover{background:rgba(59,130,246,0.3);}
+.btn-mark:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:100;}
+.overlay.open{display:flex;}
+.modal{background:#161616;border:1px solid #2a2a2a;border-radius:14px;padding:24px;width:90%;max-width:420px;}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:#9ca3af;margin-bottom:20px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:12px;color:#9ca3af;margin-bottom:6px;}
+.form-group input{width:100%;padding:10px 14px;background:#111;border:1px solid #2a2a2a;color:white;border-radius:8px;outline:none;font-family:inherit;font-size:14px;}
+.form-group input:focus{border-color:#3b82f6;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;}
+.btn-primary{background:#3b82f6;color:white;}
+.btn-primary:hover{background:#2563eb;}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-cancel{background:#1e1e1e;color:#9ca3af;border:1px solid #2a2a2a;}
+.btn-cancel:hover{color:white;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:10px;padding:12px 18px;font-size:13px;transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:200;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:#22c55e;color:#22c55e;}
+.toast.error{border-color:#ef4444;color:#ef4444;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="margin-bottom:14px;">
+    <button onclick="window.location.href='gym_owner_panel.html'" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#1e1e1e;color:#a0a0a0;border:1px solid #2a2a2a;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;" onmouseover="this.style.borderColor='#666'" onmouseout="this.style.borderColor='#2a2a2a'">
+      <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Dashboard
+    </button>
+  </div>
+  <div class="title">Fees Management</div>
+  <div class="subtitle">Track and manage member payments</div>
+  <div class="stat-pills">
+    <div class="pill"><span id="sPaid" style="color:#22c55e;">—</span>Paid</div>
+    <div class="pill"><span id="sOverdue" style="color:#f59e0b;">—</span>Overdue</div>
+    <div class="pill"><span id="sPendingCount" style="color:#ef4444;">—</span>Pending Members<br><span id="sPendingAmt" style="color:#ef4444;font-size:13px;font-weight:600;">—</span><span style="font-size:11px;color:#9ca3af;"> outstanding</span></div>
+    <div class="pill"><span id="sRevenue" style="color:#3b82f6;">—</span>This Month Revenue</div>
+  </div>
+  <div class="filters">
+    <label style="color:#9ca3af;">Status:</label>
+    <select id="statusFilter">
+      <option>All</option><option>Paid</option><option>Pending</option><option>Overdue</option>
+    </select>
+    <input type="text" id="searchInput" placeholder="Search name / ID...">
+  </div>
+  <div class="card" style="margin-top:20px;">
+    <div class="card-header">Fee Records <span id="countBadge" style="font-size:12px;color:#9ca3af;"></span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>POWER ID</th><th>NAME</th><th>PACKAGE</th>
+          <th>AMOUNT</th><th>LAST PAYMENT</th><th>NEXT DUE</th>
+          <th>STATUS</th><th>ACTION</th>
+        </tr></thead>
+        <tbody id="tableBody">
+          <tr><td colspan="8" class="loading"><span class="loader"></span>Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Mark as Paid Modal -->
+<div class="overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-title">Mark as Paid</div>
+    <div class="modal-sub" id="modalSub">Member: —</div>
+    <div class="form-group">
+      <label>Amount (₹)</label>
+      <input type="number" id="modalAmount" placeholder="e.g. 1500" min="0">
+    </div>
+    <div class="form-group">
+      <label>Payment Date</label>
+      <input type="date" id="modalDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="confirmPayBtn" onclick="confirmPay()">Confirm Payment</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey:"AIzaSyBawDWPi-NvWl3bKyGVIFi-v9FX7yHraEI",
+  authDomain:"gimbo-dc910.firebaseapp.com",
+  projectId:"gimbo-dc910",
+  storageBucket:"gimbo-dc910.firebasestorage.app",
+  messagingSenderId:"294864961933",
+  appId:"1:294864961933:web:61d6c4086c09a506bf3dc4"
+});
+const db = getFirestore(app);
+
+const tableBody    = document.getElementById("tableBody");
+const searchInput  = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+
+let _members = [], _fees = [], dataList = [];
+let _pendingPay = null; // { pid, name, defaultAmount, pkg }
+
+// ── Helpers ──────────────────────────────────────────────────
+function packageToMonths(pkg) {
+  if (!pkg) return 1;
+  const s = pkg.toLowerCase().trim();
+  if (s.includes('year'))    { const n = parseFloat(s)||1; return Math.round(n*12); }
+  if (s.includes('half'))    return 6;
+  if (s.includes('quarter')) return 3;
+  if (s.includes('annual'))  return 12;
+  if (s.includes('weekly'))  return 0.25;
+  const mm = s.match(/(\d+\.?\d*)\s*month/);
+  if (mm) return parseFloat(mm[1]);
+  const num = parseFloat(s);
+  return (!isNaN(num) && num > 0) ? num : 1;
+}
+
+function addMonths(date, months) {
+  const whole = Math.floor(months), extra = Math.round((months-whole)*30);
+  const d = new Date(date);
+  d.setMonth(d.getMonth()+whole);
+  if (extra>0) d.setDate(d.getDate()+extra);
+  return d;
+}
+
+function parseDate(v) {
+  if (!v) return null;
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (v instanceof Date) return v;
+  if (typeof v === 'number') return new Date(v);
+  const s = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+  const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmy) return new Date(`${dmy[3]}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`);
+  return new Date(s);
+}
+
+function fmtDate(v) {
+  const d = parseDate(v);
+  if (!d||isNaN(d)) return '—';
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function todayStr() {
+  const n=new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+(type||'');
+  setTimeout(()=>t.className='toast',3000);
+}
+
+// ── Core logic: compute status from data only ─────────────────
+// Status rules:
+//  - If most-recent fee doc is "paid" AND nextDue > today  → Paid
+//  - If most-recent fee doc is "paid" AND nextDue ≤ today  → Overdue (auto-expired)
+//  - If no fee doc OR fee doc not paid                     → Pending
+function computeRow(m, feesMap) {
+  const pid = String(m.powerId||'').trim();
+  const pkg = m.package || '—';
+  const dur = packageToMonths(pkg);
+
+  // Get most recent paid fee for this member
+  const allFees = feesMap[pid] || [];
+  const paidFees = allFees.filter(f=>(f.status||'').toLowerCase()==='paid');
+  paidFees.sort((a,b)=>{
+    const da=parseDate(a.paymentDate), db=parseDate(b.paymentDate);
+    return (db&&da) ? db-da : 0;
+  });
+  const latestPaid = paidFees[0] || null;
+
+  let lastPayment = null;
+  if (latestPaid)          lastPayment = parseDate(latestPaid.paymentDate);
+  if (!lastPayment && m.lastPayment)  lastPayment = parseDate(m.lastPayment);
+  if (!lastPayment && m.joinDate)     lastPayment = parseDate(m.joinDate);
+  if (!lastPayment && m.joinedDate)   lastPayment = parseDate(m.joinedDate);
+
+  const nextDue = lastPayment ? addMonths(lastPayment, dur) : null;
+  const now     = new Date();
+
+  let status;
+  if (latestPaid) {
+    status = (nextDue && nextDue <= now) ? 'Overdue' : 'Paid';
+  } else {
+    status = 'Pending';
+  }
+
+  const amount = (latestPaid && latestPaid.amount != null) ? latestPaid.amount
+               : (m.fee != null) ? m.fee : null;
+
+  return { pid, name:m.name||'', package:pkg, amount, lastPayment, nextDue, status };
+}
+
+function processAndRender() {
+  // feesMap: pid → fee[]
+  const feesMap = {};
+  _fees.forEach(f => {
+    const pid = String(f.powerId||'').trim();
+    if (!pid) return;
+    if (!feesMap[pid]) feesMap[pid]=[];
+    feesMap[pid].push(f);
+  });
+
+  dataList = _members
+    .filter(m=>(m.status||'').toLowerCase()!=='left')
+    .map(m=>computeRow(m,feesMap))
+    .sort((a,b)=>String(a.pid).localeCompare(String(b.pid),undefined,{numeric:true}));
+
+  // Stats
+  const now = new Date();
+  const mnStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  let paid=0, overdue=0, pending=0, revenue=0;
+  dataList.forEach(d=>{
+    if(d.status==='Paid')    paid++;
+    else if(d.status==='Overdue') overdue++;
+    else pending++;
+  });
+  _fees.forEach(f=>{
+    if((f.status||'').toLowerCase()!=='paid') return;
+    let fd = parseDate(f.paymentDate);
+    if(!fd || isNaN(fd)) return;
+    // Normalise UTC-midnight strings to local date by shifting with timezone offset
+    if(typeof f.paymentDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f.paymentDate.trim())) {
+      const [y,mo,d] = f.paymentDate.trim().split('-').map(Number);
+      fd = new Date(y, mo-1, d);
+    }
+    if(fd >= mnStart && fd <= now) revenue += Number(f.amount||0);
+  });
+  // Pending outstanding amount — sum fee/package amount for each pending member
+  let pendingAmt = 0;
+  dataList.forEach(d=>{ if(d.status==='Pending'||d.status==='Overdue') pendingAmt += Number(d.amount||0); });
+  document.getElementById('sPaid').textContent         = paid;
+  document.getElementById('sOverdue').textContent      = overdue;
+  document.getElementById('sPendingCount').textContent = pending + overdue;
+  document.getElementById('sPendingAmt').textContent   = '₹'+pendingAmt.toLocaleString('en-IN');
+  document.getElementById('sRevenue').textContent      = '₹'+revenue.toLocaleString('en-IN');
+
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────────
+function render() {
+  const search = searchInput.value.toLowerCase();
+  const filter = statusFilter.value;
+
+  const filtered = dataList.filter(d=>{
+    if (filter!=='All' && d.status!==filter) return false;
+    if (search && !d.name.toLowerCase().includes(search) && !d.pid.includes(search)) return false;
+    return true;
+  });
+
+  document.getElementById('countBadge').textContent = filtered.length + ' records';
+
+  if (!filtered.length) {
+    tableBody.innerHTML = '<tr><td colspan="8" class="loading">No records found</td></tr>';
+    return;
+  }
+
+  tableBody.innerHTML = filtered.map(d=>{
+    const badgeCls = d.status==='Paid' ? 'badge-paid' : d.status==='Overdue' ? 'badge-overdue' : 'badge-pending';
+    const showBtn  = d.status !== 'Paid';
+    const amtStr   = d.amount!=null ? '₹'+Number(d.amount).toLocaleString('en-IN') : '—';
+    return `<tr>
+      <td><strong>${d.pid||'—'}</strong></td>
+      <td style="text-align:left">${d.name}</td>
+      <td>${d.package}</td>
+      <td>${amtStr}</td>
+      <td>${fmtDate(d.lastPayment)}</td>
+      <td style="color:${d.status==='Overdue'?'#f59e0b':''}">${fmtDate(d.nextDue)}</td>
+      <td><span class="badge ${badgeCls}">${d.status}</span></td>
+      <td>${showBtn
+        ? `<button class="btn-mark" onclick="openModal('${d.pid}','${escQ(d.name)}','${escQ(d.package)}',${d.amount||0})">Mark Paid</button>`
+        : '<span style="color:#555;font-size:12px;">—</span>'
+      }</td>
+    </tr>`;
+  }).join('');
+}
+
+function escQ(s){ return String(s||'').replace(/'/g,"\\'"); }
+
+// ── Mark as Paid ──────────────────────────────────────────────
+window.openModal = function(pid, name, pkg, defaultAmt) {
+  _pendingPay = { pid, name, pkg, defaultAmt };
+  document.getElementById('modalSub').textContent = `${name}  (ID: ${pid})  · ${pkg}`;
+  document.getElementById('modalAmount').value = defaultAmt || '';
+  document.getElementById('modalDate').value   = todayStr();
+  document.getElementById('payModal').classList.add('open');
+};
+
+window.closeModal = function() {
+  document.getElementById('payModal').classList.remove('open');
+  _pendingPay = null;
+};
+
+window.confirmPay = async function() {
+  if (!_pendingPay) return;
+  const amount = parseFloat(document.getElementById('modalAmount').value);
+  const date   = document.getElementById('modalDate').value;
+  if (!date || isNaN(amount) || amount <= 0) {
+    showToast('Enter valid amount and date.', 'error'); return;
+  }
+  const btn = document.getElementById('confirmPayBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await addDoc(collection(db, 'fees'), {
+      powerId:     _pendingPay.pid,
+      name:        _pendingPay.name,
+      package:     _pendingPay.pkg,
+      amount,
+      paymentDate: date,
+      status:      'paid',
+      paidAt:      new Date().toISOString()
+    });
+    showToast('Payment recorded!', 'success');
+    closeModal();
+  } catch(e) {
+    console.error(e);
+    showToast('Error saving. Check connection.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Confirm Payment';
+  }
+};
+
+// Close modal on overlay click
+document.getElementById('payModal').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+
+// ── Firebase listeners ────────────────────────────────────────
+onSnapshot(collection(db,'members'), snap=>{
+  _members = snap.docs.map(d=>d.data());
+  processAndRender();
+}, err=>{ console.error(err); tableBody.innerHTML='<tr><td colspan="8" class="loading">Error loading members</td></tr>'; });
+
+onSnapshot(collection(db,'fees'), snap=>{
+  _fees = snap.docs.map(d=>d.data());
+  processAndRender();
+}, err=>console.error(err));
+
+searchInput.addEventListener('input', render);
+statusFilter.addEventListener('change', render);
+</script>
+</body>
+</html>

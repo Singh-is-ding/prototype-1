@@ -1,0 +1,856 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Supplement Sales</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0b0b0b;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    padding: 30px;
+}
+
+/* HEADER */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: #9ca3af;
+    margin-top: 5px;
+}
+
+/* BUTTON */
+.btn-primary {
+    background: #3b82f6;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+/* CARDS */
+.stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.card {
+    flex: 1;
+    background: #151515;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 10px;
+}
+
+.green {
+    color: #22c55e;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.blue {
+    color: #3b82f6;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+/* ACTION BAR */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.btn-secondary {
+    background: #1f2937;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #374151;
+}
+
+.input {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white;
+}
+
+.input::placeholder {
+    color: #6b7280;
+}
+
+/* TABLE CARD */
+.table-card {
+    margin-top: 25px;
+    background: #151515;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.search {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white;
+}
+
+.search::placeholder {
+    color: #6b7280;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    padding: 14px 20px;
+    font-size: 12px;
+    color: #9ca3af;
+    background: #111;
+    text-align: left;
+}
+
+td {
+    padding: 20px;
+    border-top: 1px solid #2a2a2a;
+    text-align: center;
+}
+
+td:first-child {
+    text-align: left;
+}
+
+td:nth-child(2) {
+    text-align: left;
+}
+
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+}
+
+/* ACTION BUTTONS */
+.action-btn {
+    background: #ef4444;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.action-btn:hover {
+    background: #dc2626;
+}
+
+/* MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #151515;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.btn-save {
+    flex: 1;
+    background: #3b82f6;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-save:hover {
+    background: #2563eb;
+}
+
+.btn-cancel {
+    flex: 1;
+    background: #374151;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-cancel:hover {
+    background: #4b5563;
+}
+
+/* ERROR BOX */
+.error {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    border: 1px solid #ef4444;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: rgba(239,68,68,0.1);
+    display: none;
+    z-index: 999;
+}
+
+.error.show {
+    display: block;
+}
+
+/* SELECT DROPDOWN */
+.form-group select {
+    width: 100%;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.form-group select:focus {
+    border-color: #3b82f6;
+}
+
+.form-group select option {
+    background: #1f2937;
+    color: white;
+}
+
+.form-group select option:disabled {
+    color: #6b7280;
+}
+
+.select-loading {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* DELETE CONFIRM MODAL */
+.confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1100;
+    justify-content: center;
+    align-items: center;
+}
+.confirm-overlay.active { display: flex; }
+
+.confirm-box {
+    background: #151515;
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    padding: 28px;
+    width: 340px;
+    max-width: 90vw;
+    text-align: center;
+}
+.confirm-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(239,68,68,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+.confirm-icon svg {
+    width: 22px; height: 22px;
+    stroke: #ef4444; fill: none; stroke-width: 2;
+}
+.confirm-heading {
+    font-size: 17px; font-weight: 600; margin-bottom: 8px;
+}
+.confirm-body {
+    font-size: 13px; color: #9ca3af; margin-bottom: 24px; line-height: 1.5;
+}
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-cancel {
+    flex: 1; background: #1f2937; border: none; padding: 11px 0;
+    border-radius: 8px; color: white; font-size: 14px; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+.confirm-delete {
+    flex: 1; background: #ef4444; border: none; padding: 11px 0;
+    border-radius: 8px; color: white; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.confirm-delete:disabled { opacity: 0.6; cursor: not-allowed; }
+</style>
+
+</head>
+
+<body>
+
+<div style="margin-bottom:14px;">
+    <button onclick="window.location.href='gym_owner_panel.html'" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#1e1e1e;color:#a0a0a0;border:1px solid #2a2a2a;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;" onmouseover="this.style.borderColor='#666'" onmouseout="this.style.borderColor='#2a2a2a'">
+        <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to Dashboard
+    </button>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+    <div>
+        <div class="title">Supplement Sales</div>
+        <div class="subtitle">Track and manage supplement sales</div>
+    </div>
+    <button class="btn-primary" id="recordSaleBtn">+ Record Sale</button>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+    <div class="card">
+        <div class="card-title">TOTAL SALES (THIS MONTH)</div>
+        <div class="green" id="totalSales">₹0</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">ITEMS SOLD (THIS MONTH)</div>
+        <div class="blue" id="itemsSold">0</div>
+    </div>
+</div>
+
+<!-- ACTION BAR -->
+<div class="actions">
+    <button class="btn-primary" id="exportMonthlyBtn">⬇ Export Monthly Report</button>
+
+    <span style="color:#9ca3af;">Custom Range:</span>
+
+    <input class="input" id="dateFrom" type="date">
+    <span>to</span>
+    <input class="input" id="dateTo" type="date">
+
+    <button class="btn-secondary" id="exportRangeBtn">Export Range</button>
+</div>
+
+<!-- TABLE -->
+<div class="table-card">
+
+    <div class="table-header">
+        <div>Sales Records</div>
+        <input class="search" id="searchInput" placeholder="Search sales...">
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>DATE</th>
+                <th>SUPPLEMENT</th>
+                <th>QUANTITY</th>
+                <th>UNIT PRICE</th>
+                <th>TOTAL AMOUNT</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="6" class="empty">Loading sales data...</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="saleModal">
+    <div class="modal-content">
+        <div class="modal-title">Record New Sale</div>
+        
+        <form id="saleForm">
+            <div class="form-group">
+                <label for="supplementName">Supplement Name</label>
+                <select id="supplementName" name="supplementName" required>
+                    <option value="" disabled selected>Loading supplements...</option>
+                </select>
+                <div class="select-loading" id="suppLoadStatus"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" min="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="unitPrice">Unit Price (₹)</label>
+                <input type="number" id="unitPrice" name="unitPrice" min="0" step="0.01" required placeholder="Auto-filled from supplement">
+            </div>
+
+            <div class="form-group">
+                <label for="saleDate">Date (YYYY-MM-DD)</label>
+                <input type="date" id="saleDate" name="saleDate" required>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Save Sale</button>
+                <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="confirm-overlay" id="deleteOverlay">
+    <div class="confirm-box">
+        <div class="confirm-icon">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </div>
+        <div class="confirm-heading">Delete Sale</div>
+        <div class="confirm-body">Are you sure you want to delete this sale record? This action cannot be undone.</div>
+        <div class="confirm-actions">
+            <button class="confirm-cancel" id="deleteCancelBtn">Cancel</button>
+            <button class="confirm-delete" id="deleteConfirmBtn">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- ERROR -->
+<div class="error" id="errorBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBawDWPi-NvWl3bKyGVIFi-v9FX7yHraEI",
+    authDomain: "gimbo-dc910.firebaseapp.com",
+    projectId: "gimbo-dc910",
+    storageBucket: "gimbo-dc910.firebasestorage.app",
+    messagingSenderId: "294864961933",
+    appId: "1:294864961933:web:61d6c4086c09a506bf3dc4",
+    measurementId: "G-XSBFDNVXKD"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// DOM Elements
+const modal          = document.getElementById('saleModal');
+const recordSaleBtn  = document.getElementById('recordSaleBtn');
+const cancelBtn      = document.getElementById('cancelBtn');
+const saleForm       = document.getElementById('saleForm');
+const tableBody      = document.getElementById('tableBody');
+const searchInput    = document.getElementById('searchInput');
+const totalSalesEl   = document.getElementById('totalSales');
+const itemsSoldEl    = document.getElementById('itemsSold');
+const exportMonthlyBtn = document.getElementById('exportMonthlyBtn');
+const exportRangeBtn = document.getElementById('exportRangeBtn');
+const errorBox       = document.getElementById('errorBox');
+const dateFromInput  = document.getElementById('dateFrom');
+const dateToInput    = document.getElementById('dateTo');
+
+// Select & price
+const suppSelect     = document.getElementById('supplementName');
+const unitPriceInput = document.getElementById('unitPrice');
+const suppLoadStatus = document.getElementById('suppLoadStatus');
+
+// Delete confirm
+const deleteOverlay   = document.getElementById('deleteOverlay');
+const deleteCancelBtn = document.getElementById('deleteCancelBtn');
+const deleteConfirmBtn= document.getElementById('deleteConfirmBtn');
+
+// State
+let allSales = [];
+let allSupplements = []; // { name, price }
+let pendingDeleteId = null;
+
+// ── SHOW ERROR ────────────────────────────────────────────────
+function showError(message) {
+    errorBox.textContent = '✕ ' + message;
+    errorBox.classList.add('show');
+    setTimeout(() => errorBox.classList.remove('show'), 3000);
+}
+
+// ── LOAD SUPPLEMENTS into dropdown ───────────────────────────
+async function loadSupplements() {
+    suppLoadStatus.textContent = 'Loading supplements...';
+    try {
+        const snap = await getDocs(collection(db, 'supplements'));
+        allSupplements = [];
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.name) allSupplements.push({ name: data.name, price: data.price ?? 0 });
+        });
+        allSupplements.sort((a, b) => a.name.localeCompare(b.name));
+
+        suppSelect.innerHTML = '';
+        if (allSupplements.length === 0) {
+            suppSelect.innerHTML = '<option value="" disabled selected>No supplements found — add one first</option>';
+            suppLoadStatus.textContent = 'No supplements in inventory.';
+            return;
+        }
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        placeholder.textContent = 'Select a supplement...';
+        suppSelect.appendChild(placeholder);
+
+        allSupplements.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.name;
+            opt.textContent = `${s.name}  —  ₹${Number(s.price).toLocaleString('en-IN')}`;
+            opt.dataset.price = s.price;
+            suppSelect.appendChild(opt);
+        });
+        suppLoadStatus.textContent = '';
+    } catch (err) {
+        console.error('Error loading supplements:', err);
+        suppSelect.innerHTML = '<option value="" disabled selected>Error loading supplements</option>';
+        suppLoadStatus.textContent = 'Failed to load supplements.';
+    }
+}
+
+// Auto-fill unit price when supplement selected
+suppSelect.addEventListener('change', () => {
+    const selected = suppSelect.options[suppSelect.selectedIndex];
+    if (selected && selected.dataset.price !== undefined) {
+        unitPriceInput.value = selected.dataset.price;
+    }
+});
+
+// ── MODAL ─────────────────────────────────────────────────────
+async function openModal() {
+    modal.classList.add('active');
+    document.getElementById('saleDate').value = new Date().toISOString().split('T')[0];
+    // Reload supplements each time modal opens to stay fresh
+    await loadSupplements();
+}
+
+function closeModal() {
+    modal.classList.remove('active');
+    saleForm.reset();
+}
+
+// ── DELETE CONFIRM MODAL ──────────────────────────────────────
+function openDeleteModal(id) {
+    pendingDeleteId = id;
+    deleteConfirmBtn.disabled = false;
+    deleteConfirmBtn.textContent = 'Delete';
+    deleteOverlay.classList.add('active');
+}
+
+function closeDeleteModal() {
+    deleteOverlay.classList.remove('active');
+    pendingDeleteId = null;
+}
+
+deleteCancelBtn.addEventListener('click', closeDeleteModal);
+deleteOverlay.addEventListener('click', e => { if (e.target === deleteOverlay) closeDeleteModal(); });
+
+deleteConfirmBtn.addEventListener('click', async () => {
+    if (!pendingDeleteId) return;
+    deleteConfirmBtn.disabled = true;
+    deleteConfirmBtn.textContent = 'Deleting...';
+    try {
+        await deleteDoc(doc(db, 'supplement_sales', pendingDeleteId));
+        closeDeleteModal();
+    } catch (err) {
+        console.error('Delete error:', err);
+        showError('Error deleting sale');
+        deleteConfirmBtn.disabled = false;
+        deleteConfirmBtn.textContent = 'Delete';
+    }
+});
+
+// ── LOAD SALES (real-time) ────────────────────────────────────
+function loadSales() {
+    onSnapshot(collection(db, 'supplement_sales'), (querySnapshot) => {
+        allSales = [];
+        querySnapshot.forEach(d => allSales.push({ id: d.id, ...d.data() }));
+        allSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+        renderTable(allSales);
+        updateStats();
+    }, (error) => {
+        console.error('Error loading sales:', error);
+        showError('Error loading sales data');
+        tableBody.innerHTML = '<tr><td colspan="6" class="empty">Error loading data</td></tr>';
+    });
+}
+
+// ── ADD SALE ──────────────────────────────────────────────────
+async function addSale(e) {
+    e.preventDefault();
+    const supplement = suppSelect.value.trim();
+    const quantity   = parseInt(document.getElementById('quantity').value);
+    const unitPrice  = parseFloat(unitPriceInput.value);
+    const date       = document.getElementById('saleDate').value;
+
+    if (!supplement) { showError('Please select a supplement'); suppSelect.focus(); return; }
+    if (!quantity || quantity < 1) { showError('Please enter a valid quantity'); return; }
+    if (!unitPrice || unitPrice < 0) { showError('Please enter a valid unit price'); return; }
+    if (!date) { showError('Please select a date'); return; }
+
+    const saveBtn = saleForm.querySelector('.btn-save');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    try {
+        await addDoc(collection(db, 'supplement_sales'), {
+            supplement:  supplement,
+            quantity:    quantity,
+            unitPrice:   unitPrice,
+            totalAmount: quantity * unitPrice,
+            date:        date
+        });
+        closeModal();
+    } catch (error) {
+        console.error('Error adding sale:', error);
+        showError('Error saving sale');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Sale';
+    }
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────
+function renderTable(sales) {
+    if (!sales || sales.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="empty">No sales found</td></tr>';
+        return;
+    }
+    tableBody.innerHTML = sales.map(sale => {
+        const supplementName = sale.supplement || sale.supplementName || sale.name || 'N/A';
+        return `
+        <tr>
+            <td>${sale.date || 'N/A'}</td>
+            <td>${supplementName}</td>
+            <td>${sale.quantity || 0}</td>
+            <td>₹${parseFloat(sale.unitPrice || 0).toFixed(2)}</td>
+            <td>₹${parseFloat(sale.totalAmount || 0).toFixed(2)}</td>
+            <td><button class="action-btn" onclick="window._deleteSale('${sale.id}')">Delete</button></td>
+        </tr>`;
+    }).join('');
+}
+
+// ── UPDATE STATS ──────────────────────────────────────────────
+function updateStats() {
+    const now = new Date();
+    const monthSales = allSales.filter(sale => {
+        const d = new Date(sale.date);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const totalAmount = monthSales.reduce((sum, s) => sum + (parseFloat(s.totalAmount) || 0), 0);
+    const totalItems  = monthSales.reduce((sum, s) => sum + (parseInt(s.quantity) || 0), 0);
+    totalSalesEl.textContent = '₹' + totalAmount.toFixed(2);
+    itemsSoldEl.textContent  = totalItems;
+}
+
+// ── SEARCH ────────────────────────────────────────────────────
+function filterSales() {
+    const term = searchInput.value.toLowerCase();
+    renderTable(allSales.filter(s =>
+        ((s.supplement || s.supplementName || s.name || '').toLowerCase().includes(term))
+    ));
+}
+
+// ── EXPORT XLSX ───────────────────────────────────────────────
+function exportToXLSX(data, filename) {
+    if (data.length === 0) { showError('No data to export'); return; }
+
+    const XLSX = window.XLSX;
+
+    // Build formatted rows
+    const rows = data.map(s => ({
+        'Date':         s.date || '',
+        'Supplement':   s.supplement || s.supplementName || s.name || '',
+        'Quantity':     parseInt(s.quantity) || 0,
+        'Unit Price (₹)': parseFloat(s.unitPrice) || 0,
+        'Total Amount (₹)': parseFloat(s.totalAmount) || 0
+    }));
+
+    // Totals row
+    const totalQty    = rows.reduce((sum, r) => sum + r['Quantity'], 0);
+    const totalAmount = rows.reduce((sum, r) => sum + r['Total Amount (₹)'], 0);
+    rows.push({
+        'Date': '',
+        'Supplement': 'TOTAL',
+        'Quantity': totalQty,
+        'Unit Price (₹)': '',
+        'Total Amount (₹)': totalAmount
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Column widths
+    ws['!cols'] = [
+        { wch: 14 },  // Date
+        { wch: 24 },  // Supplement
+        { wch: 10 },  // Quantity
+        { wch: 16 },  // Unit Price
+        { wch: 18 }   // Total Amount
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Supplement Sales');
+    XLSX.writeFile(wb, filename);
+}
+
+function exportMonthly() {
+    const now = new Date();
+    const monthSales = allSales.filter(s => {
+        const d = new Date(s.date);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const monthLabel = now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }).replace(' ', '-');
+    exportToXLSX(monthSales, `Supplement-Sales-${monthLabel}.xlsx`);
+}
+
+function exportRange() {
+    const fromStr = dateFromInput.value;
+    const toStr   = dateToInput.value;
+    if (!fromStr || !toStr) { showError('Please select both dates'); return; }
+    // yyyy-mm-dd from date inputs — compare as strings directly (safe, no timezone issues)
+    const rangeSales = allSales.filter(s => {
+        const d = (s.date || '');
+        return d >= fromStr && d <= toStr;
+    });
+    if (rangeSales.length === 0) { showError('No sales found in this range'); return; }
+    exportToXLSX(rangeSales, `Supplement-Sales-${fromStr}-to-${toStr}.xlsx`);
+}
+
+// ── EVENT LISTENERS ───────────────────────────────────────────
+recordSaleBtn.addEventListener('click', openModal);
+cancelBtn.addEventListener('click', closeModal);
+saleForm.addEventListener('submit', addSale);
+searchInput.addEventListener('input', filterSales);
+exportMonthlyBtn.addEventListener('click', exportMonthly);
+exportRangeBtn.addEventListener('click', exportRange);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+window._deleteSale = id => openDeleteModal(id);
+
+// ── INIT ──────────────────────────────────────────────────────
+loadSales();
+</script>
+
+</body>
+</html>

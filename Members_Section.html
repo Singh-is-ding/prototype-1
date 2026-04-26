@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Attendance Section</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050505;
+            --bg-secondary: #0c0c0c;
+            --bg-card: #131313;
+            --bg-card-hover: #1a1a1a;
+            --accent: #ff3a4a;
+            --accent-bright: #ff5a68;
+            --accent-glow: rgba(255, 58, 74, 0.4);
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8b8;
+            --text-muted: #888888;
+            --border-color: #333333;
+            --present: #00ff88;
+            --present-dim: #00d970;
+            --present-bg: rgba(0, 255, 136, 0.12);
+            --present-border: rgba(0, 255, 136, 0.5);
+            --present-glow: rgba(0, 255, 136, 0.4);
+            --absent: #ff4466;
+            --absent-dim: #ff2a50;
+            --absent-bg: rgba(255, 68, 102, 0.12);
+            --absent-border: rgba(255, 68, 102, 0.5);
+            --absent-glow: rgba(255, 68, 102, 0.4);
+            --energon-blue: #00e5ff;
+            --energon-glow: rgba(0, 229, 255, 0.35);
+            --streak-1: #7dffb3;
+            --streak-2: #00ff6a;
+            --streak-3: #00b4ff;
+            --streak-4: #3d7aff;
+            --streak-5: #ff4d6a;
+            --streak-6: #1a1a1a;
+            --graph-up: #00ff88;
+            --graph-down: #ff4466;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .attendance-section { max-width: 800px; margin: 0 auto; padding: 30px 20px; }
+
+        .section-header { text-align: center; margin-bottom: 35px; position: relative; }
+        .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+        .section-title span {
+            background: linear-gradient(135deg, #ff3a4a, #ff7a85);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .section-subtitle { color: var(--text-secondary); font-size: 0.95rem; }
+
+        .fullscreen-btn {
+            position: absolute; top: 0; right: 0;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 10px 16px;
+            color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.85rem; font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .fullscreen-btn:hover {
+            border-color: var(--energon-blue); color: var(--energon-blue);
+            box-shadow: 0 0 20px var(--energon-glow);
+        }
+        .fullscreen-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+        .day-lock-container {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 20px; margin-bottom: 24px;
+        }
+        .day-lock-label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+        .days-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+        .day-cell {
+            position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 14px 8px; background: var(--bg-secondary); border: 2px solid var(--border-color); border-radius: 12px; transition: all 0.3s ease;
+        }
+        .day-cell.locked { opacity: 0.4; }
+        .day-cell.current { border-color: var(--accent); background: rgba(255, 58, 74, 0.1); box-shadow: 0 0 25px var(--accent-glow); }
+        .day-cell.future { opacity: 0.55; }
+        .day-name { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+        .day-cell.current .day-name { color: var(--accent-bright); }
+        .day-cell-status { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
+        .day-cell.current .day-cell-status { color: var(--accent-bright); }
+        .lock-badge { position: absolute; top: 6px; right: 6px; width: 14px; height: 14px; color: var(--text-muted); display: none; }
+        .day-cell.locked .lock-badge { display: block; }
+        .lock-badge svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; }
+
+        .search-container { margin-bottom: 24px; }
+        .search-box { position: relative; }
+        .search-input {
+            width: 100%; padding: 16px 20px 16px 52px;
+            background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 14px;
+            color: var(--text-primary); font-size: 1rem; outline: none; transition: all 0.3s ease;
+        }
+        .search-input::placeholder { color: var(--text-muted); }
+        .search-input:focus { border-color: var(--energon-blue); box-shadow: 0 0 0 4px var(--energon-glow); }
+        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-muted); }
+        .search-input:focus + .search-icon { color: var(--energon-blue); }
+        .search-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; }
+        .search-tip { margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); }
+        .search-tip .energon-highlight { color: var(--energon-blue); font-weight: 700; }
+        .clear-search {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            width: 24px; height: 24px; background: var(--bg-secondary); border: none; border-radius: 50%;
+            color: var(--text-muted); cursor: pointer; display: none; align-items: center; justify-content: center;
+        }
+        .clear-search.visible { display: flex; }
+        .clear-search:hover { background: var(--accent); color: white; }
+        .clear-search svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+        .loading-overlay {
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 60px 20px; gap: 16px;
+        }
+        .loading-overlay.visible { display: flex; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+
+        .error-banner {
+            display: none; flex-direction: column; align-items: center;
+            padding: 32px 24px; margin-bottom: 16px;
+            background: rgba(255,68,102,0.08); border: 1px solid rgba(255,68,102,0.35);
+            border-radius: 16px; text-align: center; gap: 12px;
+        }
+        .error-banner.visible { display: flex; }
+        .error-banner-icon { font-size: 2.4rem; }
+        .error-banner-title { font-size: 1.1rem; font-weight: 700; color: var(--absent); }
+        .error-banner-msg { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7; max-width: 480px; }
+        .error-banner-msg code {
+            display: inline-block; margin-top: 10px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 10px 14px; font-family: 'Courier New', monospace;
+            font-size: 0.78rem; color: var(--energon-blue); text-align: left; white-space: pre; line-height: 1.6;
+        }
+        .error-retry-btn {
+            margin-top: 4px; padding: 10px 24px;
+            background: var(--accent); color: white; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease;
+        }
+        .error-retry-btn:hover { background: var(--accent-bright); box-shadow: 0 4px 20px var(--accent-glow); }
+
+        .member-list { display: flex; flex-direction: column; gap: 12px; }
+        .member-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px; background: var(--bg-card); border: 2px solid var(--border-color);
+            border-radius: 16px; cursor: pointer; transition: all 0.3s ease; user-select: none; position: relative;
+        }
+        .member-card:hover { background: var(--bg-card-hover); transform: translateX(4px); border-color: #555; }
+        .member-card:active { transform: scale(0.98); }
+        .member-card.present { background: var(--present-bg); border-color: var(--present-border); box-shadow: 0 0 20px rgba(0, 255, 136, 0.15); }
+        .member-card.present:hover { background: rgba(0, 255, 136, 0.18); }
+        .member-card.absent { background: var(--absent-bg); border-color: var(--absent-border); box-shadow: 0 0 20px rgba(255, 68, 102, 0.15); }
+        .member-card.absent:hover { background: rgba(255, 68, 102, 0.18); }
+        .member-card.highlighted { border-color: var(--energon-blue); box-shadow: 0 0 35px var(--energon-glow); }
+        .member-card.hidden { display: none; }
+        .member-card.saving { opacity: 0.6; pointer-events: none; }
+
+        .member-info { display: flex; align-items: center; gap: 16px; }
+        .member-avatar {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--accent), #ff7a85);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.2rem; color: white; box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .member-details { display: flex; flex-direction: column; }
+        .member-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+        .member-id { font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+        .member-id .id-label { color: var(--text-secondary); font-weight: 500; }
+        .member-id .id-value {
+            font-family: 'Courier New', monospace; letter-spacing: 0.12em; font-weight: 700;
+            color: var(--energon-blue); background: rgba(0, 229, 255, 0.1);
+            padding: 3px 10px; border-radius: 5px; border: 1px solid rgba(0, 229, 255, 0.35);
+        }
+        .member-right { display: flex; align-items: center; gap: 14px; }
+
+        .graph-btn {
+            width: 36px; height: 36px; background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease; color: var(--energon-blue);
+        }
+        .graph-btn:hover {
+            background: var(--energon-blue); color: #000;
+            box-shadow: 0 0 20px var(--energon-glow);
+        }
+        .graph-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+        .streak-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 7px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; white-space: nowrap;
+        }
+        .streak-badge.streak-0 { background: rgba(136, 136, 136, 0.15); color: #999; border: 1px solid #666; }
+        .streak-badge.streak-1 { background: rgba(125, 255, 179, 0.15); color: var(--streak-1); border: 1px solid var(--streak-1); box-shadow: 0 0 15px rgba(125, 255, 179, 0.25); }
+        .streak-badge.streak-2 { background: rgba(0, 255, 106, 0.15); color: var(--streak-2); border: 1px solid var(--streak-2); box-shadow: 0 0 15px rgba(0, 255, 106, 0.25); }
+        .streak-badge.streak-3 { background: rgba(0, 180, 255, 0.15); color: var(--streak-3); border: 1px solid var(--streak-3); box-shadow: 0 0 15px rgba(0, 180, 255, 0.3); }
+        .streak-badge.streak-4 { background: rgba(61, 122, 255, 0.18); color: #6d9fff; border: 1px solid var(--streak-4); box-shadow: 0 0 18px rgba(61, 122, 255, 0.35); }
+        .streak-badge.streak-5 { background: rgba(255, 77, 106, 0.18); color: var(--streak-5); border: 1px solid var(--streak-5); box-shadow: 0 0 20px rgba(255, 77, 106, 0.4); animation: firePulse 1.2s infinite; }
+        .streak-badge.streak-6 { background: var(--streak-6); color: #fff; border: 2px solid #fff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); animation: firePulse 1.2s infinite; }
+        @keyframes firePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+        .fire-icon { font-size: 0.95rem; animation: flicker 0.4s infinite alternate; }
+        @keyframes flicker { 0% { opacity: 1; transform: scale(1) rotate(-5deg); } 100% { opacity: 0.85; transform: scale(1.15) rotate(5deg); } }
+
+        .status-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 10px; font-size: 0.8rem;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border: none; pointer-events: none;
+        }
+        .status-btn.absent { background: linear-gradient(135deg, var(--absent), var(--absent-dim)); color: white; box-shadow: 0 4px 20px var(--absent-glow); }
+        .status-btn.present { background: linear-gradient(135deg, var(--present), var(--present-dim)); color: #003d22; box-shadow: 0 4px 20px var(--present-glow); }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: statusPulse 1.5s infinite; }
+        @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .no-results { display: none; flex-direction: column; align-items: center; padding: 60px 20px; text-align: center; }
+        .no-results.visible { display: flex; }
+        .no-results-icon { width: 80px; height: 80px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 2.5rem; border: 2px solid var(--border-color); }
+        .no-results-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+        .no-results-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal-content {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 30px; max-width: 500px; width: 90%;
+            transform: scale(0.9); transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 1.3rem; font-weight: 700; }
+        .modal-close {
+            width: 36px; height: 36px; background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+        .modal-close:hover { background: var(--accent); color: white; border-color: var(--accent); }
+        .modal-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+        .confirm-body { text-align: center; padding: 20px 0; }
+        .confirm-icon { font-size: 3rem; margin-bottom: 16px; }
+        .confirm-text { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 8px; }
+        .confirm-name { font-size: 1.4rem; font-weight: 700; color: var(--present); margin-bottom: 24px; }
+        .confirm-btns { display: flex; gap: 12px; justify-content: center; }
+        .confirm-btn {
+            padding: 14px 32px; border-radius: 12px; font-size: 0.9rem; font-weight: 700;
+            border: none; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+        }
+        .confirm-btn.save { background: var(--present); color: #003d22; box-shadow: 0 4px 20px var(--present-glow); }
+        .confirm-btn.save:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--present-glow); }
+        .confirm-btn.save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .confirm-btn.cancel { background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .confirm-btn.cancel:hover { border-color: var(--accent); color: var(--accent); }
+
+        .graph-modal .modal-content { max-width: 650px; }
+        .graph-member-info { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .graph-avatar { width: 50px; height: 50px; background: linear-gradient(135deg, var(--accent), #ff7a85); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; color: white; }
+        .graph-member-name { font-size: 1.2rem; font-weight: 700; }
+        .graph-member-id { font-size: 0.8rem; color: var(--energon-blue); }
+
+        .graph-stats { display: flex; gap: 12px; margin-bottom: 24px; }
+        .graph-stat { flex: 1; background: var(--bg-secondary); border-radius: 12px; padding: 14px; text-align: center; }
+        .graph-stat-value { font-size: 1.6rem; font-weight: 800; }
+        .graph-stat-value.present-val { color: var(--present); }
+        .graph-stat-value.absent-val { color: var(--absent); }
+        .graph-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
+
+        .trend-indicator {
+            flex: 1; background: var(--bg-secondary); border-radius: 12px; padding: 14px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .trend-arrow { font-size: 1.4rem; margin-bottom: 4px; }
+        .trend-arrow.up { color: var(--graph-up); animation: bounceUp 1s infinite; }
+        .trend-arrow.down { color: var(--graph-down); animation: bounceDown 1s infinite; }
+        .trend-text { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+        @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+        .graph-container { background: var(--bg-secondary); border-radius: 16px; padding: 20px; position: relative; }
+        .graph-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 8px; }
+        .graph-title-icon { font-size: 1rem; }
+
+        .line-graph-wrapper { position: relative; height: 180px; margin: 10px 0; }
+        .line-graph-svg { width: 100%; height: 100%; overflow: visible; }
+        .graph-grid-line { stroke: var(--border-color); stroke-width: 1; stroke-dasharray: 4 4; }
+        .graph-path { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .graph-path-up { stroke: var(--graph-up); filter: drop-shadow(0 0 8px var(--present-glow)); }
+        .graph-path-down { stroke: var(--graph-down); filter: drop-shadow(0 0 8px var(--absent-glow)); }
+        .graph-area { opacity: 0.15; }
+        .graph-area-up { fill: var(--graph-up); }
+        .graph-area-down { fill: var(--graph-down); }
+        .graph-dot { r: 5; transition: all 0.2s ease; cursor: pointer; }
+        .graph-dot:hover { r: 8; }
+        .graph-dot-up { fill: var(--graph-up); filter: drop-shadow(0 0 6px var(--present-glow)); }
+        .graph-dot-down { fill: var(--graph-down); filter: drop-shadow(0 0 6px var(--absent-glow)); }
+
+        .graph-x-labels { display: flex; justify-content: space-between; margin-top: 8px; padding: 0 5px; }
+        .graph-x-label { font-size: 0.65rem; color: var(--text-muted); }
+        .graph-y-labels { position: absolute; left: -30px; top: 0; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+        .graph-y-label { font-size: 0.6rem; color: var(--text-muted); }
+
+        .graph-legend { display: flex; justify-content: center; gap: 24px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); }
+        .legend-line { width: 24px; height: 3px; border-radius: 2px; }
+        .legend-line.up-line { background: var(--graph-up); box-shadow: 0 0 8px var(--present-glow); }
+        .legend-line.down-line { background: var(--graph-down); box-shadow: 0 0 8px var(--absent-glow); }
+
+        .journey-message { text-align: center; margin-top: 16px; padding: 12px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 10px; }
+        .journey-message p { font-size: 0.85rem; color: var(--energon-blue); }
+        .journey-message .journey-icon { font-size: 1.1rem; margin-right: 6px; }
+
+        .graph-loading {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 180px; gap: 12px;
+        }
+        .graph-loading .spinner { width: 32px; height: 32px; border-width: 3px; }
+        .graph-no-data { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.9rem; }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: var(--present); color: #003d22; padding: 16px 28px; border-radius: 12px;
+            font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 8px 30px var(--present-glow); opacity: 0; transition: all 0.4s ease; z-index: 2000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.error { background: var(--absent); color: white; box-shadow: 0 8px 30px var(--absent-glow); }
+        .toast svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+        .exit-fullscreen-btn {
+            position: fixed; top: 20px; right: 20px;
+            background: var(--accent); color: white; border: none; border-radius: 10px;
+            padding: 12px 20px; font-weight: 700; cursor: pointer; z-index: 9999;
+            display: none; align-items: center; gap: 8px; font-size: 0.85rem;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .exit-fullscreen-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+        :fullscreen .exit-fullscreen-btn { display: flex; }
+
+        @media (max-width: 640px) {
+            .section-title { font-size: 1.6rem; }
+            .fullscreen-btn { position: static; margin: 0 auto 20px; }
+            .section-header { flex-direction: column; }
+            .days-row { grid-template-columns: repeat(3, 1fr); }
+            .member-card { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+            .member-right { width: 100%; justify-content: space-between; }
+            .graph-btn { width: 32px; height: 32px; }
+            .modal-content { padding: 20px; }
+            .line-graph-wrapper { height: 140px; }
+            .confirm-btns { flex-direction: column; }
+            .confirm-btn { width: 100%; }
+            .graph-stats { flex-wrap: wrap; }
+            .graph-stat, .trend-indicator { min-width: calc(50% - 6px); }
+        }
+
+        .plan-progress-wrap { margin-top: 14px; }
+        .plan-progress-bar-bg {
+            height: 8px; background: var(--bg-card); border-radius: 99px;
+            overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .plan-progress-bar-fill {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(90deg, var(--energon-blue), var(--present));
+            box-shadow: 0 0 10px var(--energon-glow);
+            transition: width 0.6s ease;
+        }
+        .plan-progress-labels {
+            display: flex; justify-content: space-between;
+            margin-top: 6px; font-size: 0.7rem; color: var(--text-muted);
+        }
+        .plan-progress-labels span:first-child { color: var(--energon-blue); font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="attendance-section" id="attendanceSection">
+        
+        <header class="section-header">
+            <h1 class="section-title">Member <span>Attendance</span></h1>
+            <p class="section-subtitle">Track and manage daily member attendance</p>
+            <button class="fullscreen-btn" id="fullscreenBtn">
+                <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                Fullscreen
+            </button>
+        </header>
+
+        <div class="day-lock-container">
+            <p class="day-lock-label">Weekly Schedule</p>
+            <div class="days-row" id="daysRow"></div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by Energon ID (e.g., 005)" autocomplete="off">
+                <span class="search-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+                <button class="clear-search" id="clearSearch"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <p class="search-tip">⚡ Enter <span class="energon-highlight">Energon ID</span> to locate a member instantly</p>
+        </div>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <p class="loading-text">Loading members from Firebase…</p>
+        </div>
+
+        <div class="error-banner" id="errorBanner">
+            <div class="error-banner-icon">🔥</div>
+            <div class="error-banner-title">Firebase Permission Denied</div>
+            <div class="error-banner-msg">
+                Your Firestore security rules are blocking unauthenticated reads.<br>
+                Go to <strong>Firebase Console → Firestore → Rules</strong> and set:
+                <code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</code>
+                Then click <strong>Retry</strong> below. (Tighten rules after testing.)
+            </div>
+            <button class="error-retry-btn" id="retryBtn">🔄 Retry</button>
+        </div>
+
+        <div class="member-list" id="memberList"></div>
+
+        <div class="no-results" id="noResults">
+            <div class="no-results-icon">🔍</div>
+            <p class="no-results-text">No member found</p>
+            <p class="no-results-sub">Try searching with a different Energon ID</p>
+        </div>
+    </div>
+
+    <button class="exit-fullscreen-btn" id="exitFullscreenBtn">
+        <svg viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+        Exit Fullscreen
+    </button>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Attendance</h3>
+                <button class="modal-close" id="confirmClose"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="confirm-body">
+                <div class="confirm-icon">✅</div>
+                <p class="confirm-text">Save attendance for today?</p>
+                <p class="confirm-name" id="confirmMemberName">MEMBER NAME</p>
+                <div class="confirm-btns">
+                    <button class="confirm-btn save" id="confirmSave">Save</button>
+                    <button class="confirm-btn cancel" id="confirmCancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay graph-modal" id="graphModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📈 Progress Journey</h3>
+                <button class="modal-close" id="graphClose"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="graph-member-info">
+                <div class="graph-avatar" id="graphAvatar">A</div>
+                <div>
+                    <div class="graph-member-name" id="graphMemberName">MEMBER</div>
+                    <div class="graph-member-id" id="graphMemberId">Energon ID: 001</div>
+                </div>
+            </div>
+            <div class="graph-stats">
+                <div class="graph-stat">
+                    <div class="graph-stat-value present-val" id="graphPresent">—</div>
+                    <div class="graph-stat-label">Present</div>
+                </div>
+                <div class="graph-stat">
+                    <div class="graph-stat-value absent-val" id="graphAbsent">—</div>
+                    <div class="graph-stat-label">Absent</div>
+                </div>
+                <div class="trend-indicator">
+                    <span class="trend-arrow up" id="trendArrow">⬆</span>
+                    <span class="trend-text" id="trendText">Loading…</span>
+                </div>
+            </div>
+            <div class="graph-container">
+                <div class="graph-title"><span class="graph-title-icon">📊</span> Monthly Attendance Flow</div>
+                <div class="line-graph-wrapper" id="lineGraphWrapper">
+                    <div class="graph-loading" id="graphLoading">
+                        <div class="spinner"></div>
+                        <span class="loading-text">Fetching history…</span>
+                    </div>
+                    <svg class="line-graph-svg" id="lineGraphSvg" viewBox="0 0 560 160" preserveAspectRatio="none" style="display:none;"></svg>
+                </div>
+                <div class="graph-x-labels" id="graphXLabels">
+                    <span class="graph-x-label">Day 1</span>
+                    <span class="graph-x-label">—</span>
+                    <span class="graph-x-label">—</span>
+                    <span class="graph-x-label">—</span>
+                </div>
+                <div class="plan-progress-wrap" id="planProgressWrap" style="display:none;">
+                    <div class="plan-progress-bar-bg">
+                        <div class="plan-progress-bar-fill" id="planProgressFill"></div>
+                    </div>
+                    <div class="plan-progress-labels">
+                        <span id="planProgressUsed">0 days used</span>
+                        <span id="planProgressTotal">/ 30 day plan</span>
+                    </div>
+                </div>
+                <div class="graph-legend">
+                    <div class="legend-item"><div class="legend-line up-line"></div> Improvement ⬆</div>
+                    <div class="legend-item"><div class="legend-line down-line"></div> Decline ⬇</div>
+                </div>
+            </div>
+            <div class="journey-message" id="journeyMessage">
+                <p><span class="journey-icon">💪</span> <span id="journeyText">Keep pushing! Your consistency is building.</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="toastText">Attendance saved!</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            addDoc,
+            query,
+            where,
+            serverTimestamp,
+            orderBy,
+            onSnapshot
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBawDWPi-NvWl3bKyGVIFi-v9FX7yHraEI",
+            authDomain: "gimbo-dc910.firebaseapp.com",
+            projectId: "gimbo-dc910",
+            storageBucket: "gimbo-dc910.firebasestorage.app",
+            messagingSenderId: "294864961933",
+            appId: "1:294864961933:web:61d6c4086c09a506bf3dc4",
+            measurementId: "G-XSBFDNVXKD"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db  = getFirestore(app);
+
+        const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+        let members            = [];
+        let todayAttendanceMap = new Map(); // key: padded "001"
+        let currentSearchId    = null;
+        let pendingPowerId     = null;
+        let unsubMembers       = null;
+        let unsubAttendance    = null;
+
+        // SINGLE key format: always padded "001"
+        function padId(id) {
+            return String(id).trim().padStart(3, '0');
+        }
+
+        function getDateString(d) {
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        function getToday() { return getDateString(new Date()); }
+        function isSunday(dateStr) { return new Date(dateStr + 'T00:00:00').getDay() === 0; }
+        function formatEnergonId(id) { return padId(id); }
+        function getCurrentDayIndex() {
+            const d = new Date().getDay();
+            return d === 0 ? -1 : d - 1;
+        }
+        function canEditAttendance() { const d = getCurrentDayIndex(); return d >= 0 && d <= 5; }
+        function getStreakClass(s) {
+            if (s <= 0) return 'streak-0';
+            if (s >= 6) return 'streak-6';
+            return `streak-${s}`;
+        }
+        function getStreakBadgeHTML(s) {
+            const cls  = getStreakClass(s);
+            const fire = s >= 5 ? '<span class="fire-icon">🔥</span>' : '';
+            const day  = s === 1 ? 'Day' : 'Days';
+            return `<span class="streak-badge ${cls}">${fire}${s} ${day}</span>`;
+        }
+        function resolvePowerId(data) {
+            const raw = data.powerId ?? data.energonId ?? data.energon_id ?? data.power_id
+                ?? data.memberId ?? data.member_id ?? data.id ?? null;
+            return raw != null ? padId(raw) : null;
+        }
+
+        function buildDateRange(startDateStr, endDateStr) {
+            const dates = [];
+            const cur = new Date(startDateStr + 'T00:00:00');
+            const end = new Date(endDateStr   + 'T00:00:00');
+            while (cur <= end) {
+                dates.push(getDateString(cur));
+                cur.setDate(cur.getDate() + 1);
+            }
+            return dates;
+        }
+
+        // Fetch historical attendance from Firestore for date range
+        // Also merges in todayAttendanceMap for today's live status
+        async function fetchMemberAttendanceMap(powerId, startDate, endDate) {
+            const key        = padId(powerId);
+            const altKey     = String(Number(key)); // "001" → "1" for legacy docs
+            const idsToQuery = [...new Set([key, altKey])];
+            const recordMap  = new Map();
+
+            // Inject today's live attendance first (most accurate source)
+            const today    = getToday();
+            const liveRec  = todayAttendanceMap.get(key);
+            if (liveRec && today >= startDate && today <= endDate) {
+                recordMap.set(today, liveRec.status);
+            }
+
+            try {
+                await Promise.all(idsToQuery.map(async (idVariant) => {
+                    const q    = query(collection(db, 'attendance'), where('powerId', '==', idVariant));
+                    const snap = await getDocs(q);
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (!data.date) return;
+                        if (data.date < startDate || data.date > endDate) return;
+                        // Don't overwrite today's live value
+                        if (data.date === today) return;
+                        if (!recordMap.has(data.date) || data.status === 'present') {
+                            recordMap.set(data.date, data.status);
+                        }
+                    });
+                }));
+            } catch(e) { console.error('fetchMemberAttendanceMap error:', e); }
+            return recordMap;
+        }
+
+        async function calcStreakAndBreak(member) {
+            const today        = getToday();
+            const lookbackDate = (() => { const d = new Date(); d.setDate(d.getDate() - 90); return getDateString(d); })();
+            const startDate    = member.joinDate && member.joinDate > lookbackDate ? member.joinDate : lookbackDate;
+            const recordMap    = await fetchMemberAttendanceMap(member.powerId, startDate, today);
+            const membershipDays = member.membershipDays || 30;
+
+            // All non-Sunday days from startDate up to today
+            // Sundays are excluded entirely - they never count as a gap
+            const dates = buildDateRange(startDate, today).filter(d => !isSunday(d));
+
+            let streak = 0;
+
+            // Walk backwards from today counting the current unbroken run.
+            // Rules:
+            //   - Today is skipped if not yet marked (may be early in the day)
+            //   - Any absent/unmarked non-Sunday day that is NOT today breaks streak immediately -> reset to 0 and stop
+            for (let i = dates.length - 1; i >= 0; i--) {
+                const d      = dates[i];
+                const status = recordMap.get(d);
+
+                if (status === 'present') {
+                    streak++;
+                } else {
+                    // Allow skipping today only - attendance may not be saved yet
+                    if (d === today) continue;
+                    // Any other gap (Mon-Sat, not Sunday) breaks the streak immediately
+                    break;
+                }
+            }
+
+            if (streak === 0) {
+                return { streak: 0, breakDays: 0, brokeStreak: false, inactive: false };
+            }
+            if (streak > membershipDays) {
+                return { streak: 0, breakDays: streak, inactive: true };
+            }
+            return { streak, breakDays: 0, brokeStreak: false, inactive: false };
+        }
+
+        async function refreshStreaks() {
+            await Promise.all(members.map(async (m) => {
+                const result  = await calcStreakAndBreak(m);
+                m.streak      = result.streak;
+                m.breakDays   = result.breakDays;
+                m.brokeStreak = result.brokeStreak;
+                m.inactive    = result.inactive;
+                updateMemberCard(m);
+            }));
+        }
+
+        const el = {
+            daysRow:           document.getElementById('daysRow'),
+            searchInput:       document.getElementById('searchInput'),
+            clearSearch:       document.getElementById('clearSearch'),
+            memberList:        document.getElementById('memberList'),
+            noResults:         document.getElementById('noResults'),
+            loadingOverlay:    document.getElementById('loadingOverlay'),
+            errorBanner:       document.getElementById('errorBanner'),
+            retryBtn:          document.getElementById('retryBtn'),
+            fullscreenBtn:     document.getElementById('fullscreenBtn'),
+            exitFullscreenBtn: document.getElementById('exitFullscreenBtn'),
+            confirmModal:      document.getElementById('confirmModal'),
+            confirmClose:      document.getElementById('confirmClose'),
+            confirmSave:       document.getElementById('confirmSave'),
+            confirmCancel:     document.getElementById('confirmCancel'),
+            confirmMemberName: document.getElementById('confirmMemberName'),
+            graphModal:        document.getElementById('graphModal'),
+            graphClose:        document.getElementById('graphClose'),
+            graphAvatar:       document.getElementById('graphAvatar'),
+            graphMemberName:   document.getElementById('graphMemberName'),
+            graphMemberId:     document.getElementById('graphMemberId'),
+            graphPresent:      document.getElementById('graphPresent'),
+            graphAbsent:       document.getElementById('graphAbsent'),
+            lineGraphSvg:      document.getElementById('lineGraphSvg'),
+            graphLoading:      document.getElementById('graphLoading'),
+            trendArrow:        document.getElementById('trendArrow'),
+            trendText:         document.getElementById('trendText'),
+            journeyText:       document.getElementById('journeyText'),
+            toast:             document.getElementById('toast'),
+            graphXLabels:      document.getElementById('graphXLabels'),
+            planProgressWrap:  document.getElementById('planProgressWrap'),
+            planProgressFill:  document.getElementById('planProgressFill'),
+            planProgressUsed:  document.getElementById('planProgressUsed'),
+            planProgressTotal: document.getElementById('planProgressTotal'),
+            toastText:         document.getElementById('toastText'),
+        };
+
+        function showToast(message, isError = false) {
+            el.toastText.textContent = message;
+            el.toast.classList.toggle('error', isError);
+            el.toast.classList.add('show');
+            setTimeout(() => el.toast.classList.remove('show'), 3000);
+        }
+        function enterFullscreen() {
+            const e = document.documentElement;
+            (e.requestFullscreen || e.webkitRequestFullscreen || e.msRequestFullscreen)?.call(e);
+        }
+        function exitFullscreen() {
+            (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen)?.call(document);
+        }
+        function openModal(m)  { m.classList.add('active');    document.body.style.overflow = 'hidden'; }
+        function closeModal(m) { m.classList.remove('active'); document.body.style.overflow = ''; }
+
+        function listenMembersRealtime() {
+            if (unsubMembers) { unsubMembers(); unsubMembers = null; }
+            el.loadingOverlay.classList.add('visible');
+            el.errorBanner.classList.remove('visible');
+            el.memberList.innerHTML = '';
+            const membersQuery = query(collection(db, 'members'), orderBy('powerId', 'asc'));
+            unsubMembers = onSnapshot(membersQuery,
+                (snap) => {
+                    el.loadingOverlay.classList.remove('visible');
+                    if (snap.empty) {
+                        el.memberList.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px 20px;"><div style="font-size:2rem;margin-bottom:12px;">📭</div><div style="font-size:1rem;font-weight:600;margin-bottom:8px;">No members found</div></div>`;
+                        return;
+                    }
+                    const prevMap = new Map(members.map(m => [m.powerId, m]));
+                    members = snap.docs.map(d => {
+                        const data    = d.data();
+                        const rawId   = data.powerId ?? data.energonId ?? data.energon_id ?? data.power_id ?? data.memberId ?? data.member_id ?? d.id;
+                        const powerId = padId(rawId); // always "001" format
+                        const name    = data.name ?? data.memberName ?? data.fullName ?? data.full_name ?? 'Unknown';
+                        const prev    = prevMap.get(powerId);
+
+                        let joinDate = null;
+                        if (data.createdAt?.toDate) {
+                            joinDate = getDateString(data.createdAt.toDate());
+                        } else if (data.joinDate) {
+                            joinDate = data.joinDate;
+                        } else if (data.startDate) {
+                            joinDate = data.startDate;
+                        }
+
+                        const liveRec = todayAttendanceMap.get(powerId);
+                        const isPresent = liveRec
+                            ? liveRec.status === 'present'
+                            : (prev ? prev.present : false);
+
+                        return {
+                            docId:         d.id,
+                            powerId,
+                            powerIdNum:    parseInt(powerId, 10),
+                            name,
+                            package:       data.package ?? data.plan ?? '',
+                            status:        data.status  ?? 'active',
+                            joinDate,
+                            membershipDays: Number(data.membershipDays ?? data.membership_days ?? data.duration ?? 30),
+                            present:     isPresent,
+                            streak:      prev ? prev.streak      : 0,
+                            breakDays:   prev ? prev.breakDays   : 0,
+                            brokeStreak: prev ? prev.brokeStreak : false,
+                            inactive:    prev ? prev.inactive    : false,
+                        };
+                    }).filter(m => m.powerId && m.name && m.name !== 'Unknown');
+                    members.sort((a, b) => a.powerIdNum - b.powerIdNum);
+                    renderMemberList();
+                    if (!unsubAttendance) {
+                        listenAttendanceRealtime();
+                    } else {
+                        members.forEach(m => updateMemberCard(m));
+                    }
+                    refreshStreaks();
+                },
+                (err) => {
+                    el.loadingOverlay.classList.remove('visible');
+                    const isPerm = err.code === 'permission-denied'
+                        || err.message?.toLowerCase().includes('permission')
+                        || err.message?.toLowerCase().includes('missing or insufficient');
+                    if (isPerm) { el.errorBanner.classList.add('visible'); }
+                    else { showToast(`Firebase error: ${err.message}`, true); }
+                }
+            );
+        }
+
+        function listenAttendanceRealtime() {
+            if (unsubAttendance) { unsubAttendance(); unsubAttendance = null; }
+            const today = getToday();
+            const q     = query(collection(db, 'attendance'), where('date', '==', today));
+            unsubAttendance = onSnapshot(q,
+                (snap) => {
+                    todayAttendanceMap.clear();
+                    snap.forEach(d => {
+                        const data = d.data();
+                        const key  = resolvePowerId(data); // always padded
+                        if (!key) return;
+                        const existing = todayAttendanceMap.get(key);
+                        if (!existing || data.status === 'present') {
+                            todayAttendanceMap.set(key, { docId: d.id, status: data.status || 'absent' });
+                        }
+                    });
+                    members.forEach(m => {
+                        const rec = todayAttendanceMap.get(m.powerId);
+                        m.present = rec ? rec.status === 'present' : false;
+                        updateMemberCard(m);
+                    });
+                    refreshStreaks();
+                },
+                (err) => { console.error('listenAttendanceRealtime error:', err); showToast('Real-time sync failed', true); }
+            );
+        }
+
+        async function markAttendance(member) {
+            const today  = getToday();
+            const key    = padId(member.powerId);
+            const existing = todayAttendanceMap.get(key);
+            try {
+                if (existing) { showToast(`${member.name} — Already marked today ✅`); return; }
+                const card = document.querySelector(`.member-card[data-id="${member.powerId}"]`);
+                if (card) card.classList.add('saving');
+                await addDoc(collection(db, 'attendance'), {
+                    powerId   : key,
+                    name      : member.name,
+                    date      : today,
+                    status    : 'present',
+                    timestamp : serverTimestamp()
+                });
+                showToast(`${member.name} marked Present ✅`);
+            } catch (err) {
+                console.error('markAttendance error:', err);
+                const card = document.querySelector(`.member-card[data-id="${member.powerId}"]`);
+                if (card) card.classList.remove('saving');
+                showToast('Failed to save attendance', true);
+            }
+        }
+
+        async function getMemberHistory(member) {
+            const today     = getToday();
+            const startDate = member.joinDate || (() => { const d = new Date(); d.setDate(d.getDate() - 89); return getDateString(d); })();
+            const recordMap = await fetchMemberAttendanceMap(member.powerId, startDate, today);
+            const allDates  = buildDateRange(startDate, today).filter(d => !isSunday(d));
+            return allDates.map(date => ({ date, present: recordMap.get(date) === 'present' ? 1 : 0 }));
+        }
+
+        function getStreakBadgeWithBreakHTML(member) {
+            if (member.inactive) {
+                return `<span class="streak-badge streak-0">Inactive</span>`;
+            }
+            // Only show "broke" if they have NO current streak at all
+            if (member.brokeStreak && member.breakDays > 0 && member.streak === 0) {
+                return `<span class="streak-badge streak-0">Broke ${member.breakDays}d ago</span>`;
+            }
+            return getStreakBadgeHTML(member.streak);
+        }
+
+        function renderMemberList() {
+            if (!members.length) {
+                if (!el.errorBanner.classList.contains('visible')) {
+                    el.memberList.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">No members found in Firebase.</p>';
+                }
+                return;
+            }
+            el.memberList.innerHTML = members.map(member => {
+                const statusClass = member.present ? 'present' : 'absent';
+                const statusText  = member.present ? 'Present'  : 'Absent';
+                const highlighted = currentSearchId === member.powerId ? 'highlighted' : '';
+                return `
+                    <div class="member-card ${statusClass} ${highlighted}" data-id="${member.powerId}" role="button" tabindex="0">
+                        <div class="member-info">
+                            <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
+                            <div class="member-details">
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-id">
+                                    <span class="id-label">Energon ID:</span>
+                                    <span class="id-value">${formatEnergonId(member.powerId)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="member-right">
+                            <button class="graph-btn" data-graph-id="${member.powerId}" title="View Progress Journey">
+                                <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            </button>
+                            ${getStreakBadgeWithBreakHTML(member)}
+                            <div class="status-btn ${statusClass}">
+                                <span class="status-indicator"></span>${statusText}
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+            attachMemberCardListeners();
+        }
+
+        function updateMemberCard(member) {
+            const card = document.querySelector(`.member-card[data-id="${member.powerId}"]`);
+            if (!card) return;
+            const statusClass = member.present ? 'present' : 'absent';
+            const statusText  = member.present ? 'Present'  : 'Absent';
+            card.className    = card.className.replace(/\b(present|absent)\b/g, '').trim() + ` ${statusClass}`;
+            const statusBtn   = card.querySelector('.status-btn');
+            if (statusBtn) {
+                statusBtn.className = `status-btn ${statusClass}`;
+                statusBtn.innerHTML = `<span class="status-indicator"></span>${statusText}`;
+            }
+            const streakEl = card.querySelector('.streak-badge');
+            if (streakEl) streakEl.outerHTML = getStreakBadgeWithBreakHTML(member);
+            card.classList.remove('saving');
+        }
+
+        async function updateGraph(member) {
+            el.graphLoading.style.display = 'flex';
+            el.lineGraphSvg.style.display = 'none';
+            el.graphPresent.textContent   = '---';
+            el.graphAbsent.textContent    = '---';
+            el.trendText.textContent      = 'Loading...';
+
+            const history      = await getMemberHistory(member);
+            const presentCount = history.filter(d => d.present === 1).length;
+            const absentCount  = history.filter(d => d.present === 0).length;
+
+            el.graphPresent.textContent = presentCount;
+            el.graphAbsent.textContent  = absentCount;
+
+            // Trend: compare first half vs second half attendance
+            const half        = Math.floor(history.length / 2);
+            const prev        = history.slice(0, half).reduce((a, b) => a + b.present, 0);
+            const last        = history.slice(half).reduce((a, b) => a + b.present, 0);
+            const isImproving = last >= prev;
+            el.trendArrow.textContent = isImproving ? '⬆' : '⬇';
+            el.trendArrow.className   = `trend-arrow ${isImproving ? 'up' : 'down'}`;
+            el.trendText.textContent  = isImproving ? 'Improving' : 'Needs Focus';
+
+            const msgs = isImproving
+                ? ['Great progress! Keep the momentum going! 🚀', 'Your dedication is paying off! 💪', 'Excellent improvement trend! ⭐']
+                : ['Every day is a new opportunity! 🌟', 'Small steps lead to big changes! 💫', 'Stay focused, you got this! 🎯'];
+            el.journeyText.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+
+            // -----------------------------------------------------------
+            // Score logic: each day's score = cumulative fitness level
+            //   Present  -> score += GAIN  (going up, momentum builds)
+            //   Absent   -> score -= PENALTY (going down, but floor at 0)
+            //
+            // We use a variable GAIN so consecutive attendance rewards more:
+            //   - consecutive streak of 1  -> +1
+            //   - consecutive streak of 2  -> +2
+            //   - consecutive streak of 3+ -> +3 (capped)
+            //   Absent always = -2 (punishes harder than a single-day gain)
+            // -----------------------------------------------------------
+            const ABSENT_PENALTY = 2;
+            const MAX_GAIN = 3;
+
+            const progress = [];
+            let score = 0;
+            let consec = 0; // consecutive present days
+
+            // Anchor at day 0, score 0 (graph always starts from bottom-left)
+            progress.push({ day: 0, score: 0, present: false, anchor: true });
+
+            history.forEach((d, i) => {
+                if (d.present === 1) {
+                    consec++;
+                    const gain = Math.min(consec, MAX_GAIN);
+                    score += gain;
+                } else {
+                    consec = 0;
+                    score = Math.max(0, score - ABSENT_PENALTY);
+                }
+                progress.push({ day: i + 1, score, present: d.present === 1, anchor: false });
+            });
+
+            const totalDays = history.length; // actual days elapsed since join (no Sundays)
+            const planDays  = member.membershipDays || 30;
+            const pct       = Math.min(100, Math.round((totalDays / planDays) * 100));
+
+            // --- Dynamic x-axis labels: Day 1 ... quarter ... half ... totalDays ---
+            const q1 = Math.round(totalDays * 0.33);
+            const q2 = Math.round(totalDays * 0.66);
+            el.graphXLabels.innerHTML = `
+                <span class="graph-x-label">Day 1</span>
+                <span class="graph-x-label">Day ${q1 || ''}</span>
+                <span class="graph-x-label">Day ${q2 || ''}</span>
+                <span class="graph-x-label">Day ${totalDays}</span>`;
+
+            // --- Plan progress bar ---
+            el.planProgressWrap.style.display = 'block';
+            el.planProgressFill.style.width    = pct + '%';
+            el.planProgressUsed.textContent    = `${totalDays} days used`;
+            el.planProgressTotal.textContent   = `/ ${planDays} day plan`;
+
+            renderLineGraph(progress);
+            el.graphLoading.style.display = 'none';
+            el.lineGraphSvg.style.display = 'block';
+        }
+
+                function renderLineGraph(progress) {
+            if (!progress || progress.length < 2) return;
+            const svg     = el.lineGraphSvg;
+            const width   = 560;
+            const height  = 140;
+            const padding = 10;
+            const maxScore = Math.max(...progress.map(p => p.score), 1);
+            const { path, points } = generateSmoothPath(progress, width - padding * 2, height - padding * 2, maxScore);
+
+            let svgContent = `<defs><linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#00ff88;stop-opacity:0.3"/>
+                <stop offset="100%" style="stop-color:#00ff88;stop-opacity:0"/>
+            </linearGradient></defs>`;
+
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (height - padding * 2) * i / 4;
+                svgContent += `<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" class="graph-grid-line"/>`;
+            }
+
+            // Baseline at bottom (score = 0)
+            const baselineY = padding + (height - padding * 2);
+            svgContent += `<line x1="${padding}" y1="${baselineY}" x2="${width - padding}" y2="${baselineY}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;
+
+            if (points.length > 1) {
+                const areaPath = `${path} L ${points[points.length-1].x + padding} ${height - padding} L ${padding} ${height - padding} Z`;
+                svgContent += `<path d="${areaPath}" fill="url(#areaGradient)"/>`;
+            }
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i], p2 = points[i+1];
+                const isUp  = p2.score >= p1.score;
+                const color = isUp ? 'var(--graph-up)' : 'var(--graph-down)';
+                const glow  = isUp ? 'var(--present-glow)' : 'var(--absent-glow)';
+                const t = 0.3;
+                svgContent += `<path d="M ${p1.x+padding} ${p1.y+padding} C ${p1.x+(p2.x-p1.x)*t+padding} ${p1.y+padding}, ${p2.x-(p2.x-p1.x)*t+padding} ${p2.y+padding}, ${p2.x+padding} ${p2.y+padding}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" style="filter:drop-shadow(0 0 6px ${glow})"/>`;
+            }
+
+            points.forEach((p, i) => {
+                if (p.anchor) return; // skip the silent anchor dot
+                // Show dot on every day so present/absent is visually clear on all days
+                if (true) {
+                    const color = p.present ? 'var(--graph-up)' : 'var(--graph-down)';
+                    const glow  = p.present ? 'var(--present-glow)' : 'var(--absent-glow)';
+                    svgContent += `<circle cx="${p.x+padding}" cy="${p.y+padding}" r="4" fill="${color}" style="filter:drop-shadow(0 0 4px ${glow})"/>`;
+                }
+            });
+
+            svg.innerHTML = svgContent;
+        }
+
+        function generateSmoothPath(pts, width, height, maxScore) {
+            if (pts.length < 2) return { path: '', points: [] };
+            const xScale = width  / (pts.length - 1);
+            const yScale = maxScore > 0 ? height / maxScore : height;
+            const scaled = pts.map((p, i) => ({
+                x: i * xScale,
+                y: height - p.score * yScale,
+                score: p.score,
+                present: p.present,
+                anchor: p.anchor || false
+            }));
+            let path = `M ${scaled[0].x} ${scaled[0].y}`;
+            for (let i = 0; i < scaled.length - 1; i++) {
+                const p0 = scaled[i], p1 = scaled[i+1];
+                const t  = 0.3;
+                path += ` C ${p0.x+(p1.x-p0.x)*t} ${p0.y}, ${p1.x-(p1.x-p0.x)*t} ${p1.y}, ${p1.x} ${p1.y}`;
+            }
+            return { path, points: scaled };
+        }
+
+        function renderDayLockSystem() {
+            const cur = getCurrentDayIndex();
+            el.daysRow.innerHTML = DAYS.map((day, i) => {
+                let cls = '', txt = '';
+                if (cur === -1 || i < cur) { cls = 'locked'; txt = 'Locked'; }
+                else if (i === cur)         { cls = 'current'; txt = 'Active'; }
+                else                        { cls = 'future'; txt = 'Upcoming'; }
+                return `<div class="day-cell ${cls}">
+                    <span class="lock-badge"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                    <span class="day-name">${day}</span>
+                    <span class="day-cell-status">${txt}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function attachMemberCardListeners() {
+            document.querySelectorAll('.member-card').forEach(card => {
+                card.addEventListener('click', e => {
+                    if (e.target.closest('.graph-btn')) return;
+                    if (canEditAttendance()) showConfirmModal(card.dataset.id);
+                });
+                card.addEventListener('keydown', e => {
+                    if ((e.key === 'Enter' || e.key === ' ') && canEditAttendance()) {
+                        e.preventDefault(); showConfirmModal(card.dataset.id);
+                    }
+                });
+            });
+            document.querySelectorAll('.graph-btn').forEach(btn => {
+                btn.addEventListener('click', e => { e.stopPropagation(); showGraphModal(btn.dataset.graphId); });
+            });
+        }
+
+        function showConfirmModal(powerId) {
+            const member = members.find(m => m.powerId === powerId);
+            if (!member) return;
+            // Already marked present today — don't open modal, just show toast
+            if (member.present) {
+                showToast(`${member.name} — Already marked Present today ✅`);
+                return;
+            }
+            pendingPowerId = powerId;
+            el.confirmMemberName.textContent = member.name;
+            openModal(el.confirmModal);
+        }
+
+        async function confirmSaveAttendance() {
+            if (!pendingPowerId) return;
+            const member = members.find(m => m.powerId === pendingPowerId);
+            if (!member) return;
+            el.confirmSave.disabled    = true;
+            el.confirmSave.textContent = 'Saving…';
+            await markAttendance(member);
+            el.confirmSave.disabled    = false;
+            el.confirmSave.textContent = 'Save';
+            closeModal(el.confirmModal);
+            pendingPowerId = null;
+        }
+
+        async function showGraphModal(powerId) {
+            const member = members.find(m => m.powerId === powerId);
+            if (!member) return;
+            el.graphAvatar.textContent     = member.name.charAt(0).toUpperCase();
+            el.graphMemberName.textContent = member.name;
+            el.graphMemberId.textContent   = `Energon ID: ${formatEnergonId(member.powerId)}`;
+            openModal(el.graphModal);
+            await updateGraph(member);
+        }
+
+        function handleSearch(queryStr) {
+            const trimmed = queryStr.trim();
+            el.clearSearch.classList.toggle('visible', trimmed.length > 0);
+            document.querySelectorAll('.member-card').forEach(c => c.classList.remove('hidden', 'highlighted'));
+            if (!trimmed) { currentSearchId = null; el.noResults.classList.remove('visible'); return; }
+            const match = members.find(m =>
+                padId(m.powerId) === trimmed.padStart(3, '0') ||
+                m.powerId === trimmed ||
+                m.name.toUpperCase().includes(trimmed.toUpperCase())
+            );
+            if (match) {
+                document.querySelectorAll('.member-card').forEach(c => { if (c.dataset.id !== match.powerId) c.classList.add('hidden'); });
+                const card = document.querySelector(`.member-card[data-id="${match.powerId}"]`);
+                if (card) { card.classList.add('highlighted'); card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                currentSearchId = match.powerId;
+                el.noResults.classList.remove('visible');
+            } else {
+                document.querySelectorAll('.member-card').forEach(c => c.classList.add('hidden'));
+                el.noResults.classList.add('visible');
+                currentSearchId = null;
+            }
+        }
+
+        function clearSearch() {
+            el.searchInput.value = '';
+            currentSearchId = null;
+            el.clearSearch.classList.remove('visible');
+            el.noResults.classList.remove('visible');
+            document.querySelectorAll('.member-card').forEach(c => c.classList.remove('hidden', 'highlighted'));
+            el.searchInput.focus();
+        }
+
+        function initEventListeners() {
+            el.searchInput.addEventListener('input',   e => handleSearch(e.target.value));
+            el.clearSearch.addEventListener('click',   clearSearch);
+            el.searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') clearSearch(); });
+            el.fullscreenBtn.addEventListener('click',     enterFullscreen);
+            el.exitFullscreenBtn.addEventListener('click', exitFullscreen);
+            el.confirmClose.addEventListener('click',  () => closeModal(el.confirmModal));
+            el.confirmCancel.addEventListener('click', () => closeModal(el.confirmModal));
+            el.confirmSave.addEventListener('click',   confirmSaveAttendance);
+            el.graphClose.addEventListener('click',    () => closeModal(el.graphModal));
+            el.confirmModal.addEventListener('click',  e => { if (e.target === el.confirmModal) closeModal(el.confirmModal); });
+            el.graphModal.addEventListener('click',    e => { if (e.target === el.graphModal)   closeModal(el.graphModal);   });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') { closeModal(el.confirmModal); closeModal(el.graphModal); }
+            });
+            el.retryBtn.addEventListener('click', () => { el.errorBanner.classList.remove('visible'); listenMembersRealtime(); });
+        }
+
+        async function init() {
+            renderDayLockSystem();
+            initEventListeners();
+            listenMembersRealtime();
+        }
+
+        init();
+
+        window.AttendanceSection = {
+            getMembers:       () => JSON.parse(JSON.stringify(members)),
+            getSummary:       () => ({ total: members.length, present: members.filter(m => m.present).length, absent: members.filter(m => !m.present).length }),
+            refresh:          () => { listenMembersRealtime(); },
+            listenAttendance: () => { listenAttendanceRealtime(); }
+        };
+    </script>
+</body>
+</html>

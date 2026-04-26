@@ -1,0 +1,1241 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYM Owner Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a; --bg-secondary: #111111; --bg-card: #161616; --bg-hover: #1e1e1e;
+            --border: #2a2a2a; --text-primary: #ffffff; --text-secondary: #a0a0a0; --text-muted: #666666;
+            --accent: #3b82f6; --accent-hover: #2563eb; --success: #22c55e; --warning: #f59e0b;
+            --danger: #ef4444; --purple: #8b5cf6; --pink: #ec4899;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; display: flex; }
+        .sidebar { width: 240px; background: var(--bg-secondary); border-right: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; overflow-y: auto; }
+        .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .sidebar-logo { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+        .sidebar-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+        .nav-menu { list-style: none; flex: 1; }
+        .nav-item { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: var(--text-secondary); transition: all 0.2s; border-left: 3px solid transparent; }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: var(--bg-hover); color: var(--accent); border-left-color: var(--accent); }
+        .nav-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .nav-divider { height: 1px; background: var(--border); margin: 10px 20px; }
+        .nav-label { padding: 8px 20px; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); }
+        .main-content { flex: 1; margin-left: 240px; padding: 30px; min-height: 100vh; }
+        .page-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .page-title { font-size: 1.5rem; font-weight: 700; }
+        .page-subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 2rem; font-weight: 700; }
+        .stat-value.success { color: var(--success); } .stat-value.danger { color: var(--danger); }
+        .stat-value.warning { color: var(--warning); } .stat-value.accent { color: var(--accent); }
+        .stat-value.purple { color: var(--purple); }
+        .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+        .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .table-title { font-size: 1rem; font-weight: 600; }
+        .table-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        th { background: var(--bg-secondary); font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        tr:hover { background: var(--bg-hover); } tr:last-child td { border-bottom: none; }
+        .btn { padding: 10px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .btn-primary { background: var(--accent); color: white; } .btn-primary:hover { background: var(--accent-hover); }
+        .btn-danger { background: var(--danger); color: white; } .btn-danger:hover { opacity: 0.9; }
+        .btn-secondary { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--text-muted); }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .form-input { width: 100%; padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: var(--accent); }
+        .form-input::placeholder { color: var(--text-muted); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge-present { background: rgba(34,197,94,0.15); color: var(--success); }
+        .badge-inside { background: rgba(59,130,246,0.15); color: var(--accent); }
+        .excel-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; } background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+        .excel-card-title { font-size: 1rem; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .excel-card-title svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 2; }
+        .excel-card-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+        .excel-options { display: flex; flex-direction: column; gap: 10px; }
+        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; }
+        .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .toast { position: fixed; bottom: 30px; right: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 2000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: var(--success); } .toast.error { border-color: var(--danger); }
+        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+        .inside-indicator { width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; } .mobile-menu-btn { display: flex !important; }
+        }
+        .mobile-menu-btn { display: none; position: fixed; top: 20px; left: 20px; width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; align-items: center; justify-content: center; cursor: pointer; z-index: 101; }
+        .mobile-menu-btn svg { width: 24px; height: 24px; stroke: var(--text-primary); fill: none; stroke-width: 2; }
+    </style>
+</head>
+<body>
+
+<button class="mobile-menu-btn" id="mobileMenuBtn">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">GYM ADMIN</div>
+        <div class="sidebar-subtitle">Owner Control Panel</div>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item active" data-section="dashboard">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
+        </li>
+        <li class="nav-item" data-section="members" data-href="members.html">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Members
+        </li>
+        <li class="nav-item" data-section="attendance" data-href="attendance.html">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Attendance
+        </li>
+        <li class="nav-item" data-section="fees" data-href="fees.html">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Fees
+        </li>
+        <div class="nav-divider"></div>
+        <div class="nav-label">Inventory</div>
+        <li class="nav-item" data-section="supplements">
+            <svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="8" rx="2"/><path d="M3 10v8a2 2 0 002 2h14a2 2 0 002-2v-8"/><path d="M10 16h4"/></svg>Supplements
+        </li>
+        <li class="nav-item" data-section="equipment">
+            <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M4 6.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M4 22.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M20 6.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M20 22.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M4 6.5v11"/><path d="M20 6.5v11"/></svg>Equipment
+        </li>
+        <li class="nav-item" data-section="sales">
+            <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>Supplement Sales
+        </li>
+        <div class="nav-divider"></div>
+        <div class="nav-label">Staff</div>
+        <li class="nav-item" data-section="staff">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Staff
+        </li>
+        <div class="nav-divider"></div>
+        <div class="nav-label">Management</div>
+        <li class="nav-item" data-section="excel">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Excel
+        </li>
+        <li class="nav-item" data-section="reports">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports
+        </li>
+        <li class="nav-item" onclick="window.location.href='settings.html'" title="Open Settings" style="cursor:pointer;">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;margin-left:auto;opacity:0.5;stroke:currentColor;fill:none;stroke-width:2;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </li>
+    </ul>
+    <div class="sidebar-footer">
+        <div id="gymNameFooter">GYM Admin Panel</div>
+        <div style="margin-top:4px;">v2.0 — Owner Panel</div>
+    </div>
+</aside>
+
+<div class="main-content">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="section-dashboard">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Dashboard</div>
+                <div class="page-subtitle" id="dashboardDate">Loading...</div>
+            </div>
+            <button class="btn btn-secondary" onclick="refreshAll()">
+                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh
+            </button>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Total Members</div><div class="stat-value accent" id="statTotalMembers">—</div></div>
+            <div class="stat-card"><div class="stat-label">Active Members</div><div class="stat-value success" id="statActiveMembers">—</div></div>
+            <div class="stat-card"><div class="stat-label">Paused Members</div><div class="stat-value warning" id="statPausedMembers">—</div></div>
+            <div class="stat-card"><div class="stat-label">Left Members</div><div class="stat-value danger" id="statLeftMembers">—</div></div>
+            <div class="stat-card"><div class="stat-label">Today Present</div><div class="stat-value success" id="statTodayPresent">—</div></div>
+            <div class="stat-card">
+                <div class="stat-label">Monthly Revenue</div>
+                <div class="stat-value success" id="statMonthlyRevenue">—</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">
+                    Fees: <span id="statRevenueFees" style="color:var(--success);">—</span> +
+                    Sales: <span id="statRevenueSales" style="color:var(--purple);">—</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unpaid Fees</div>
+                <div class="stat-value danger" id="statUnpaidFees">—</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;"><span id="statUnpaidCount">—</span> active members unpaid this month</div>
+            </div>
+            <div class="stat-card"><div class="stat-label">Equipment Count</div><div class="stat-value purple" id="statEquipmentCount">—</div></div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title"><span class="inside-indicator"></span>Today's Present Members</div>
+                <div class="table-actions">
+                    <span id="todayPresentBadge" style="font-size:0.8rem;color:var(--text-muted);">Loading...</span>
+                    <button class="btn btn-secondary btn-sm" onclick="loadTodayPresent()">
+                        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table>
+                    <thead><tr><th>#</th><th>Power ID</th><th>Name</th><th>Check-In Time</th><th>Package</th><th>Status</th></tr></thead>
+                    <tbody id="todayPresentBody"><tr><td colspan="6" class="loading-row"><span class="loading-spinner"></span> Loading from Firebase...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- EXCEL -->
+    <div class="section" id="section-excel">
+        <div class="page-header"><div><div class="page-title">Excel Import / Export</div><div class="page-subtitle">Import members or attendance from .xlsx files</div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div class="excel-card">
+                <div class="excel-card-title"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import Data</div>
+                <div class="excel-card-desc">Import any data from .xlsx — synced directly to Firebase</div>
+                <div class="excel-options" style="gap:10px;">
+
+                    <!-- Members -->
+                    <div class="file-input-wrapper" style="display:block;">
+                        <button class="btn btn-secondary" style="width:100%;justify-content:flex-start;gap:12px;padding:12px 16px;">
+                            <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:2;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Import Members
+                            <span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">→ members</span>
+                        </button>
+                        <input type="file" accept=".xlsx,.xls" id="excelImportInput" data-type="members" onchange="handleExcelImport(this,'members')">
+                    </div>
+
+                    <!-- Attendance -->
+                    <div class="file-input-wrapper" style="display:block;">
+                        <button class="btn btn-secondary" style="width:100%;justify-content:flex-start;gap:12px;padding:12px 16px;">
+                            <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--success);fill:none;stroke-width:2;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Import Attendance
+                            <span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">→ attendance</span>
+                        </button>
+                        <input type="file" accept=".xlsx,.xls" id="excelImportAttendanceInput" data-type="attendance" onchange="handleExcelImport(this,'attendance')">
+                    </div>
+
+                    <!-- Supplements -->
+                    <div class="file-input-wrapper" style="display:block;">
+                        <button class="btn btn-secondary" style="width:100%;justify-content:flex-start;gap:12px;padding:12px 16px;">
+                            <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--purple);fill:none;stroke-width:2;"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="8" rx="2"/><path d="M3 10v8a2 2 0 002 2h14a2 2 0 002-2v-8"/><path d="M10 16h4"/></svg>Import Supplements
+                            <span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">→ supplements</span>
+                        </button>
+                        <input type="file" accept=".xlsx,.xls" id="excelImportSupplementsInput" data-type="supplements" onchange="handleExcelImport(this,'supplements')">
+                    </div>
+
+                    <!-- Equipment -->
+                    <div class="file-input-wrapper" style="display:block;">
+                        <button class="btn btn-secondary" style="width:100%;justify-content:flex-start;gap:12px;padding:12px 16px;">
+                            <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--warning);fill:none;stroke-width:2;"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M4 6.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M4 22.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M20 6.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M20 22.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/><path d="M4 6.5v11"/><path d="M20 6.5v11"/></svg>Import Equipment
+                            <span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">→ equipment</span>
+                        </button>
+                        <input type="file" accept=".xlsx,.xls" id="excelImportEquipmentInput" data-type="equipment" onchange="handleExcelImport(this,'equipment')">
+                    </div>
+
+                    <!-- Supplement Sales -->
+                    <div class="file-input-wrapper" style="display:block;">
+                        <button class="btn btn-secondary" style="width:100%;justify-content:flex-start;gap:12px;padding:12px 16px;">
+                            <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--pink);fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>Import Supplement Sales
+                            <span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">→ sales</span>
+                        </button>
+                        <input type="file" accept=".xlsx,.xls" id="excelImportSalesInput" data-type="sales" onchange="handleExcelImport(this,'sales')">
+                    </div>
+
+                    <!-- Staff -->
+                    <div class="file-input-wrapper" style="display:block;">
+                        <button class="btn btn-secondary" style="width:100%;justify-content:flex-start;gap:12px;padding:12px 16px;">
+                            <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--success);fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Import Staff
+                            <span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">→ staff</span>
+                        </button>
+                        <input type="file" accept=".xlsx,.xls" id="excelImportStaffInput" data-type="staff" onchange="handleExcelImport(this,'staff')">
+                    </div>
+
+                    <div id="importStatus" style="font-size:0.82rem;color:var(--text-muted);min-height:18px;margin-top:4px;padding:8px;background:var(--bg-secondary);border-radius:6px;display:none;"></div>
+
+                    <div style="margin-top:4px;padding-top:12px;border-top:1px solid var(--border);font-size:0.76rem;color:var(--text-muted);line-height:1.6;">
+                        <b style="color:var(--text-secondary);">Members:</b> Power ID, Name, Phone, Email, Package, Fitness Goal, Status, Fee, Last Payment, Joined<br>
+                        <b style="color:var(--text-secondary);">Attendance:</b> Power ID, Date (YYYY-MM-DD), Status (present/absent), Time<br>
+                        <b style="color:var(--text-secondary);">Supplements:</b> Name, Brand, Price, Stock<br>
+                        <b style="color:var(--text-secondary);">Equipment:</b> Name, Category, Quantity, Condition, Purchase Date, Notes<br>
+                        <b style="color:var(--text-secondary);">Sales:</b> Date, Supplement, Quantity, Unit Price, Total<br>
+                        <b style="color:var(--text-secondary);">Staff:</b> Name, Role, Phone, Email, Salary, Join Date, Status
+                    </div>
+                </div>
+            </div>
+            <div class="excel-card">
+                <div class="excel-card-title"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Data</div>
+                <div class="excel-card-desc">Export data to Excel for backup or analysis</div>
+                <div class="excel-options" style="gap:10px;">
+                    <button class="btn btn-primary" onclick="exportData('members')" style="width:100%;padding:13px 16px;">Export All Members</button>
+                    <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:14px;">
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">Select date for daily attendance:</div>
+                        <input type="date" id="exportDailyDate" class="form-input" style="margin-bottom:10px;">
+                        <button class="btn btn-primary" onclick="exportDailyAttendance()" style="width:100%;padding:12px 16px;">Export Daily Attendance</button>
+                    </div>
+                    <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:14px;">
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">Select month for monthly attendance:</div>
+                        <input type="month" id="exportMonthlyMonth" class="form-input" style="margin-bottom:10px;">
+                        <button class="btn btn-primary" onclick="exportMonthlyAttendance()" style="width:100%;padding:12px 16px;">Export Monthly Attendance</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="exportFeesPending()" style="width:100%;padding:13px 16px;">Export Fees Pending</button>
+                    <button class="btn btn-primary" onclick="exportData('fees')" style="width:100%;padding:13px 16px;">Export Full Fees Report</button>
+                    <button class="btn btn-secondary" onclick="exportData('supplements')" style="width:100%;padding:13px 16px;">Export Supplements</button>
+                    <button class="btn btn-secondary" onclick="exportData('equipment')" style="width:100%;padding:13px 16px;">Export Equipment</button>
+                    <button class="btn btn-secondary" onclick="exportData('staff')" style="width:100%;padding:13px 16px;">Export Staff</button>
+                    <div style="padding-top:12px;border-top:1px solid var(--border);margin-top:4px;">
+                        <div style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Stored Data Status</div>
+                        <div id="dataStatusList" style="font-size:0.82rem;color:var(--text-secondary);"></div>
+                        <button class="btn btn-danger btn-sm" onclick="clearAllData()" style="width:100%;margin-top:10px;">
+                            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import {
+    getFirestore, collection, getDocs, onSnapshot, query, where,
+    addDoc, doc
+} from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const XLSX = window.XLSX;
+
+const app = initializeApp({
+    apiKey: "AIzaSyBawDWPi-NvWl3bKyGVIFi-v9FX7yHraEI",
+    authDomain: "gimbo-dc910.firebaseapp.com",
+    projectId: "gimbo-dc910",
+    storageBucket: "gimbo-dc910.firebasestorage.app",
+    messagingSenderId: "294864961933",
+    appId: "1:294864961933:web:61d6c4086c09a506bf3dc4"
+});
+const db = getFirestore(app);
+
+// ── Canonical collection names ────────────────────────────────
+const COL = {
+    members:     'members',
+    attendance:  'attendance',
+    fees:        'fees',
+    sales:       'supplement_sales',
+    supplements: 'supplements',
+    equipment:   'equipment',
+    staff:       'staff'
+};
+
+// ── Pure helpers ──────────────────────────────────────────────
+
+const _dateFmtCache = new Map();
+function getLocalDateString() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+
+function normalizeDate(v) {
+    if (!v) return '';
+    if (typeof v === 'number') {
+        const d = new Date(Math.round((v - 25569) * 86400000));
+        return d.toISOString().slice(0, 10);
+    }
+    if (v instanceof Date) return isNaN(v) ? '' : v.toISOString().slice(0, 10);
+    const s = String(v).trim();
+    if (!s) return '';
+    if (_dateFmtCache.has(s)) return _dateFmtCache.get(s);
+    let result = s;
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+        result = s.slice(0, 10);
+    } else {
+        const d = new Date(s);
+        result = isNaN(d) ? s : d.toISOString().slice(0, 10);
+    }
+    if (_dateFmtCache.size < 2000) _dateFmtCache.set(s, result);
+    return result;
+}
+
+function normalizeKeys(obj) {
+    const out = {};
+    for (const k of Object.keys(obj)) {
+        out[k.trim().toLowerCase()] = typeof obj[k] === 'string' ? obj[k].trim() : obj[k];
+    }
+    return out;
+}
+
+function pick(obj, ...keys) {
+    for (const k of keys) {
+        const v = obj[k];
+        if (v !== undefined && v !== null && v !== '') return v;
+    }
+    return '';
+}
+
+function safeNum(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+// Parse any date value → local JS Date (avoids UTC-midnight timezone shift for YYYY-MM-DD strings)
+function safeLocalDate(v) {
+    if (!v) return null;
+    if (typeof v.toDate === 'function') return v.toDate();          // Firestore Timestamp
+    if (v instanceof Date) return isNaN(v) ? null : v;
+    if (typeof v === 'number') return new Date(v);
+    const s = String(v).trim();
+    if (!s) return null;
+    // YYYY-MM-DD → local midnight (NOT UTC)
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return new Date(Number(iso[1]), Number(iso[2])-1, Number(iso[3]));
+    const d = new Date(s);
+    return isNaN(d) ? null : d;
+}
+
+function extractTime(r) {
+    if (r.time) return r.time;
+    if (r.timestamp && typeof r.timestamp.toDate === 'function')
+        return r.timestamp.toDate().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:false });
+    if (r.checkintime) return r.checkintime;
+    return '—';
+}
+
+function pidOf(r) {
+    return String(r.powerId || r.memberid || r['power id'] || '').trim();
+}
+
+function feeDate(f) {
+    return f.paymentDate || f.lastpayment || f.date || f.month || '';
+}
+
+// ── Debounce ──────────────────────────────────────────────────
+function debounce(fn, ms) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+// ── Settings — Firebase primary, localStorage cache ───────────
+// In-memory settings object (single source after first load)
+let _settings = {};
+
+function getSetting(key, fallback = '') {
+    return _settings[key] !== undefined ? String(_settings[key]) : (localStorage.getItem('gym_setting_' + key) ?? fallback);
+}
+
+function _applySettingsToUI() {
+    const gymName = getSetting('gymName', 'GYM Admin Panel') || 'GYM Admin Panel';
+    document.getElementById('gymNameFooter').textContent = gymName;
+    document.title = gymName + ' — Owner Panel';
+}
+
+function loadSettings() { _applySettingsToUI(); }
+
+// Subscribe to settings doc for real-time cross-device sync
+function _subscribeSettings() {
+    onSnapshot(doc(db, 'settings', 'gymSettings'), snap => {
+        if (snap.exists()) {
+            _settings = snap.data();
+            // Mirror to localStorage as cache
+            Object.entries(_settings).forEach(([k, v]) => localStorage.setItem('gym_setting_' + k, v));
+        }
+        _applySettingsToUI();
+    }, err => console.warn('settings onSnapshot error:', err));
+}
+
+
+// ── Live Firebase state ───────────────────────────────────────
+let _fbMembers     = [];
+let _fbFees        = [];
+let _fbSales       = [];
+let _fbAttendance  = [];
+let _fbSupplements = [];
+let _fbEquipment   = [];
+let _fbStaff       = [];
+
+// Derived caches — rebuilt once per snapshot, reused by all consumers
+let _cache = {
+    memberMap:    null,   // Map<pid, member>
+    activeMembers: null,  // member[]
+    paidSetThisMonth: null, // Set<pid>
+};
+
+function _invalidateCache() {
+    _cache.memberMap     = null;
+    _cache.activeMembers = null;
+    _cache.paidSetThisMonth = null;
+}
+
+function _getMemberMap() {
+    if (!_cache.memberMap) {
+        _cache.memberMap = new Map();
+        _fbMembers.forEach(m => {
+            const pid = pidOf(m);
+            if (pid) _cache.memberMap.set(pid, m);
+        });
+    }
+    return _cache.memberMap;
+}
+
+function _getActiveMembers() {
+    if (!_cache.activeMembers) {
+        _cache.activeMembers = _fbMembers.filter(m => (m.status||'').toLowerCase() === 'active');
+    }
+    return _cache.activeMembers;
+}
+
+function _getPaidSetThisMonth() {
+    if (!_cache.paidSetThisMonth) {
+        const now = new Date();
+        const thisMonth = now.getMonth(), thisYear = now.getFullYear();
+        _cache.paidSetThisMonth = new Set();
+        for (const f of _fbFees) {
+            if ((f.status||'').toLowerCase() !== 'paid') continue;
+            const ds = feeDate(f);
+            if (!ds) continue;
+            const fd = safeLocalDate(ds);
+            if (!fd) continue;
+            // A fee is "paid this month OR paid any time this cycle" — member is considered paid
+            // if they have ANY paid record (next-due logic lives in fees.html)
+            // For dashboard unpaid: a member is unpaid if NO paid fee exists at all or latest paid nextDue has passed
+            _cache.paidSetThisMonth.add(pidOf(f));
+        }
+    }
+    return _cache.paidSetThisMonth;
+}
+
+// ── Dashboard ─────────────────────────────────────────────────
+const _debouncedDashboard = debounce(_recomputeDashboard, 80);
+
+function _recomputeDashboard() {
+    const today     = new Date();
+    const thisMonth = today.getMonth();
+    const thisYear  = today.getFullYear();
+    const todayStr  = getLocalDateString();
+
+    document.getElementById('dashboardDate').textContent =
+        today.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    // Single-pass member classification
+    let totalNonLeft = 0, activeCount = 0, pausedCount = 0, leftCount = 0;
+    for (const m of _fbMembers) {
+        const s = (m.status || '').toLowerCase();
+        if (s === 'left') { leftCount++; }
+        else { totalNonLeft++; if (s === 'active') activeCount++; else if (s === 'paused') pausedCount++; }
+    }
+    document.getElementById('statTotalMembers').textContent   = totalNonLeft;
+    document.getElementById('statActiveMembers').textContent  = activeCount;
+    document.getElementById('statPausedMembers').textContent  = pausedCount;
+    document.getElementById('statLeftMembers').textContent    = leftCount;
+    document.getElementById('statEquipmentCount').textContent = _fbEquipment.length;
+
+    // Today present — from _fbAttendance (today-snapshot keeps table live)
+    let todayPresent = 0;
+    for (const a of _fbAttendance) {
+        if (normalizeDate(a.date) === todayStr && ['present','inside'].includes((a.status||'').toLowerCase()))
+            todayPresent++;
+    }
+    document.getElementById('statTodayPresent').textContent = todayPresent;
+
+    // Monthly revenue — single pass over fees + sales
+    let feeRevenue = 0;
+    const paidSet  = _getPaidSetThisMonth();   // reuse cached set
+    for (const f of _fbFees) {
+        if ((f.status||'').toLowerCase() !== 'paid') continue;
+        const ds = feeDate(f);
+        if (!ds) continue;
+        const fd = safeLocalDate(ds);
+        if (!fd) continue;
+        if (fd.getMonth() === thisMonth && fd.getFullYear() === thisYear) feeRevenue += safeNum(f.amount);
+    }
+
+    let salesRevenue = 0;
+    for (const s of _fbSales) {
+        const ds = s.date || '';
+        if (!ds) continue;
+        const sd = safeLocalDate(ds);
+        if (!sd) continue;
+        if (sd.getMonth() === thisMonth && sd.getFullYear() === thisYear)
+            salesRevenue += safeNum(s.totalAmount || s.amount || 0);
+    }
+
+    const totalRevenue = feeRevenue + salesRevenue;
+    document.getElementById('statMonthlyRevenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+    document.getElementById('statRevenueFees').textContent    = '₹' + feeRevenue.toLocaleString('en-IN');
+    document.getElementById('statRevenueSales').textContent   = '₹' + salesRevenue.toLocaleString('en-IN');
+
+    // Unpaid fees — member is unpaid if their latest paid fee's nextDue has passed OR no paid fee at all
+    const defaultFee = safeNum(getSetting('monthlyFee', '1000'));
+    // Build: pid → latest paid fee date
+    const latestPaidDate = new Map();
+    for (const f of _fbFees) {
+        if ((f.status||'').toLowerCase() !== 'paid') continue;
+        const pid = pidOf(f);
+        const fd  = safeLocalDate(feeDate(f));
+        if (!fd) continue;
+        if (!latestPaidDate.has(pid) || fd > latestPaidDate.get(pid)) latestPaidDate.set(pid, fd);
+    }
+    function _pkgMonths(pkg) {
+        if (!pkg) return 1;
+        const s = pkg.toLowerCase();
+        if (s.includes('year'))    { const n=parseFloat(s)||1; return Math.round(n*12); }
+        if (s.includes('half'))    return 6;
+        if (s.includes('quarter')) return 3;
+        if (s.includes('annual'))  return 12;
+        const mm = s.match(/(\d+\.?\d*)\s*month/); if (mm) return parseFloat(mm[1]);
+        const num = parseFloat(s); return (!isNaN(num)&&num>0) ? num : 1;
+    }
+    function _addMonths(d, m) { const r=new Date(d); r.setMonth(r.getMonth()+Math.floor(m)); return r; }
+    let unpaidCount = 0, unpaidTotal = 0;
+    const now2 = new Date();
+    for (const m of _getActiveMembers()) {
+        const pid   = pidOf(m);
+        const lpd   = latestPaidDate.get(pid) || null;
+        let isUnpaid = false;
+        if (!lpd) {
+            isUnpaid = true;
+        } else {
+            const nextDue = _addMonths(lpd, _pkgMonths(m.package||''));
+            if (nextDue <= now2) isUnpaid = true;
+        }
+        if (isUnpaid) {
+            unpaidCount++;
+            unpaidTotal += safeNum(m.fee || m.monthlyFee || defaultFee);
+        }
+    }
+    document.getElementById('statUnpaidFees').textContent  = '₹' + unpaidTotal.toLocaleString('en-IN');
+    document.getElementById('statUnpaidCount').textContent = unpaidCount;
+}
+
+// ── Today Present table (own onSnapshot — stays live all day) ─
+let _unsubTodayPresent = null;
+
+function loadTodayPresentFromFirebase() {
+    const tbody    = document.getElementById('todayPresentBody');
+    const badge    = document.getElementById('todayPresentBadge');
+    const todayStr = getLocalDateString();
+
+    if (_unsubTodayPresent) { _unsubTodayPresent(); _unsubTodayPresent = null; }
+    tbody.innerHTML = '<tr><td colspan="6" class="loading-row"><span class="loading-spinner"></span> Loading from Firebase...</td></tr>';
+
+    _unsubTodayPresent = onSnapshot(
+        query(collection(db, COL.attendance), where('date', '==', todayStr)),
+        snap => {
+            const memberMap = _getMemberMap();
+            const rows = [];
+            snap.forEach(d => {
+                const data   = d.data();
+                const status = (data.status || '').toLowerCase();
+                if (!['present','inside'].includes(status)) return;
+                const pid    = pidOf(data);
+                const member = memberMap.get(pid) || memberMap.get(String(Number(pid))) || {};
+                rows.push({
+                    powerId: pid || '—',
+                    name:    data.name || member.name || 'Unknown',
+                    time:    extractTime(data),
+                    package: data.package || member.package || '—',
+                    status:  data.status || 'present'
+                });
+            });
+
+            rows.sort((a, b) => {
+                const an = parseFloat(a.powerId), bn = parseFloat(b.powerId);
+                return (!isNaN(an) && !isNaN(bn)) ? an - bn : String(a.powerId).localeCompare(String(b.powerId));
+            });
+
+            badge.textContent = rows.length + ' present today (' + todayStr + ')';
+            document.getElementById('statTodayPresent').textContent = rows.length;
+
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No members present today (${todayStr})</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = rows.map((r, i) => {
+                const bc = (r.status||'').toLowerCase() === 'present' ? 'badge-present' : 'badge-inside';
+                return `<tr>
+                    <td style="color:var(--text-muted);">${i+1}</td>
+                    <td style="font-family:monospace;font-size:0.85rem;color:var(--accent);">${r.powerId}</td>
+                    <td style="font-weight:600;">${r.name}</td>
+                    <td style="color:var(--text-secondary);font-weight:500;">${r.time}</td>
+                    <td><span style="background:rgba(59,130,246,0.1);color:var(--accent);padding:3px 8px;border-radius:6px;font-size:0.78rem;">${r.package}</span></td>
+                    <td><span class="badge ${bc}">${r.status}</span></td>
+                </tr>`;
+            }).join('');
+        },
+        err => {
+            console.error('todayPresent onSnapshot error:', err);
+            badge.textContent = 'Firebase error';
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Error loading attendance.</td></tr>`;
+        }
+    );
+}
+window.loadTodayPresent = loadTodayPresentFromFirebase;
+
+// ── Firebase onSnapshot listeners ─────────────────────────────
+function syncFromFirebase() {
+    // Members
+    onSnapshot(collection(db, COL.members), snap => {
+        _fbMembers = snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+        _invalidateCache();
+        _debouncedDashboard();
+        loadTodayPresentFromFirebase();
+    }, err => console.warn('members onSnapshot error:', err));
+
+    // Attendance
+    onSnapshot(collection(db, COL.attendance), snap => {
+        _fbAttendance = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _debouncedDashboard();
+    }, err => console.warn('attendance onSnapshot error:', err));
+
+    // Fees
+    onSnapshot(collection(db, COL.fees), snap => {
+        _fbFees = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _cache.paidSetThisMonth = null;   // invalidate only the fee-derived cache
+        _debouncedDashboard();
+    }, err => console.warn('fees onSnapshot error:', err));
+
+    // Supplement Sales — single canonical collection
+    onSnapshot(collection(db, COL.sales), snap => {
+        _fbSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _debouncedDashboard();
+    }, err => console.warn('supplement_sales onSnapshot error:', err));
+
+    // Staff
+    onSnapshot(collection(db, COL.staff), snap => {
+        _fbStaff = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }, err => console.warn('staff onSnapshot error:', err));
+
+    // Equipment
+    onSnapshot(collection(db, COL.equipment), snap => {
+        _fbEquipment = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('statEquipmentCount').textContent = _fbEquipment.length;
+    }, err => console.warn('equipment onSnapshot error:', err));
+
+    // Supplements
+    onSnapshot(collection(db, COL.supplements), snap => {
+        _fbSupplements = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }, err => console.warn('supplements onSnapshot error:', err));
+}
+
+// ── Navigation ────────────────────────────────────────────────
+const REDIRECT_SECTIONS = {
+    members:'members.html', attendance:'attendance.html', fees:'fees.html',
+    supplements:'supplement.html', equipment:'equipment.html',
+    sales:'suppliment_sales.html', staff:'staff.html', settings:'settings.html',
+    reports:'reports.html'
+};
+const ALLOWED = ['dashboard','excel'];
+
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const section = this.dataset.section;
+        if (!section) return;
+        if (REDIRECT_SECTIONS[section]) { window.location.href = REDIRECT_SECTIONS[section]; return; }
+        if (!ALLOWED.includes(section)) return;
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById('section-' + section);
+        if (target) target.classList.add('active');
+        document.getElementById('sidebar').classList.remove('open');
+        if (section === 'dashboard') { _recomputeDashboard(); loadTodayPresentFromFirebase(); }
+        if (section === 'excel')     updateDataStatus();
+    });
+});
+document.getElementById('mobileMenuBtn').addEventListener('click', () =>
+    document.getElementById('sidebar').classList.toggle('open')
+);
+
+// ── Excel Export ──────────────────────────────────────────────
+function _makeSheet(rows, colWidths) {
+    const ws = XLSX.utils.json_to_sheet(rows);
+    if (colWidths) ws['!cols'] = colWidths.map(w => ({ wch: w }));
+    return ws;
+}
+
+function _attRowToExport(r, memberMap) {
+    const pid    = pidOf(r)||'—';
+    const member = (memberMap && pid !== '—') ? (memberMap.get(pid) || memberMap.get(String(Number(pid))) || {}) : {};
+    const time   = r.time || r.checkintime ||
+        (r.timestamp && typeof r.timestamp.toDate === 'function'
+            ? r.timestamp.toDate().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false})
+            : '') || '—';
+    return {
+        'Power ID': pid,
+        'Name':     r.name || member.name || '—',
+        'Date':     r.date||'—',
+        'Time':     time,
+        'Status':   r.status||'—',
+        'Package':  r.package || member.package || '—'
+    };
+}
+
+function _sortByPowerId(rows, pidKey) {
+    const k = pidKey || 'Power ID';
+    return rows.slice().sort((a, b) => {
+        const an = parseFloat(String(a[k]||'')), bn = parseFloat(String(b[k]||''));
+        return (!isNaN(an)&&!isNaN(bn)) ? an-bn : String(a[k]||'').localeCompare(String(b[k]||''));
+    });
+}
+
+function exportDailyAttendance() {
+    const dateVal = document.getElementById('exportDailyDate').value;
+    if (!dateVal) { showToast('Please select a date.', 'error'); return; }
+    const day = _fbAttendance.filter(a => normalizeDate(a.date) === dateVal);
+    if (!day.length) { showToast('No attendance for ' + dateVal, 'error'); return; }
+    const memberMap = _getMemberMap();
+    const sorted = _sortByPowerId(day.map(r => _attRowToExport(r, memberMap)));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, _makeSheet(sorted, [10,22,12,10,10,16]), 'Daily Attendance');
+    XLSX.writeFile(wb, 'Attendance_Daily_' + dateVal + '.xlsx');
+    showToast('Exported daily attendance for ' + dateVal, 'success');
+}
+
+function exportMonthlyAttendance() {
+    const monthVal = document.getElementById('exportMonthlyMonth').value;
+    if (!monthVal) { showToast('Please select a month.', 'error'); return; }
+    const [y, m] = monthVal.split('-').map(Number);
+    const monthly = _fbAttendance.filter(a => { const d = new Date(normalizeDate(a.date)); return d.getFullYear()===y && d.getMonth()===m-1; });
+    if (!monthly.length) { showToast('No attendance for ' + monthVal, 'error'); return; }
+    const memberMap = _getMemberMap();
+    const sorted = _sortByPowerId(monthly.map(r => _attRowToExport(r, memberMap)));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, _makeSheet(sorted, [10,22,12,10,10,16]), 'Monthly Attendance');
+    XLSX.writeFile(wb, 'Attendance_Monthly_' + monthVal + '.xlsx');
+    showToast('Exported monthly attendance for ' + monthVal, 'success');
+}
+
+function exportFeesPending() {
+    const monthStart = new Date();
+    monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+    const memberMap = _getMemberMap();
+    const rows = _fbFees
+        .filter(f => (f.status||'').toLowerCase() !== 'paid')
+        .map(f => {
+            const pid    = pidOf(f);
+            const member = memberMap.get(pid) || {};
+            const ds     = feeDate(f);
+            const fDate  = ds ? new Date(normalizeDate(ds)) : null;
+            return {
+                'Power ID':   pid||'—',
+                'Name':       f.name||member.name||'—',
+                'Phone':      member.phone||'—',
+                'Package':    f.package||member.package||'—',
+                'Amount Due (₹)': safeNum(f.amount),
+                'Amount Paid (₹)': safeNum(f.amountPaid||0),
+                'Outstanding (₹)': safeNum((f.amount||0) - (f.amountPaid||0)),
+                'Due Date':   ds||'—',
+                'Status':     (fDate && fDate < monthStart) ? 'Overdue' : 'Unpaid'
+            };
+        });
+    if (!rows.length) { showToast('No pending fees found.', 'error'); return; }
+    const sortedRows = _sortByPowerId(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, _makeSheet(sortedRows, [10,22,14,14,14,14,14,14,10]), 'Pending Fees');
+    XLSX.writeFile(wb, 'Fees_Pending_' + getLocalDateString() + '.xlsx');
+    showToast('Exported pending fees.', 'success');
+}
+
+function exportData(type) {
+    const wb = XLSX.utils.book_new();
+    let hasData = false;
+    const addSheet = (name, rows, widths) => { if (rows&&rows.length) { XLSX.utils.book_append_sheet(wb, _makeSheet(rows,widths), name); hasData=true; } };
+
+    if (type==='members'||type==='all') {
+        const memberMap = _getMemberMap();
+        const memberRows = _sortByPowerId(_fbMembers.map(m=>{
+            const pid = pidOf(m);
+            const memberFees = _fbFees.filter(f => pidOf(f) === pid) || [];
+            const paidFees = memberFees.filter(f => (f.status||'').toLowerCase() === 'paid') || [];
+            const pendingFeesList = memberFees.filter(f => (f.status||'').toLowerCase() === 'pending') || [];
+            const totalPaid = paidFees.reduce((sum, f) => sum + safeNum(f.amount||f.amountPaid||0), 0);
+            const totalPending = pendingFeesList.reduce((sum, f) => sum + safeNum(f.amount||f.amountPaid||0), 0);
+            const pendingCount = pendingFeesList.length;
+            let monthlyFee = safeNum(m.fee||m.monthlyFee||0);
+            if (!monthlyFee && memberFees.length > 0) {
+                const amounts = memberFees.map(f => safeNum(f.amount||f.amountPaid||0)).filter(a => a > 0);
+                if (amounts.length > 0) monthlyFee = Math.max(...amounts);
+            }
+            return {
+                'Power ID':pid||'—',
+                'Name':m.name||'—',
+                'Phone':m.phone||'—',
+                'Email':m.email||'—',
+                'Package':m.package||'—',
+                'Fitness Goal':m.fitnessGoal||m.fitnessgoal||'—',
+                'Status':m.status||'—',
+                'Join Date':m.joinDate||m.joindate||'—',
+                'Monthly Fee (₹)':monthlyFee,
+                'Total Paid (₹)':totalPaid,
+                'Total Pending (₹)':totalPending,
+                'Pending Count':pendingCount
+            };
+        }));
+        addSheet('Members', memberRows, [10,22,14,24,14,18,10,12,12,12,12,10]);
+    }
+
+    if (type==='supplements'||type==='all')
+        addSheet('Supplements', _fbSupplements.map(s=>({
+            'Name':s.name||'—','Brand':s.brand||'—','Price (₹)':safeNum(s.price||0),'Stock':safeNum(s.stock||0)
+        })), [24,16,12,10]);
+
+    if (type==='equipment'||type==='all') {
+        function _resolveEqDate(val) {
+            if (!val) return '—';
+            // Firestore Timestamp object
+            if (typeof val === 'object' && typeof val.toDate === 'function') return val.toDate().toISOString().slice(0,10);
+            if (val instanceof Date) return isNaN(val) ? '—' : val.toISOString().slice(0,10);
+            // Firestore seconds/nanoseconds plain object
+            if (typeof val === 'object' && val.seconds) return new Date(val.seconds*1000).toISOString().slice(0,10);
+            return normalizeDate(val) || String(val);
+        }
+        function _compressNotes(text) {
+            if (!text || text === '—') return text || '—';
+            const words = text.trim().split(/\s+/);
+            if (words.length <= 10) return text;
+            // Insert newline every 10 words so Excel wraps into neat lines
+            const lines = [];
+            for (let i = 0; i < words.length; i += 10) lines.push(words.slice(i, i+10).join(' '));
+            return lines.join('\n');
+        }
+        const eqRows = _fbEquipment.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))).map(e=>({
+            'Name':e.name||'—',
+            'Category':e.category||e.type||e.equipmentType||'—',
+            'Quantity':safeNum(e.quantity||e.qty||0),
+            'Condition':e.condition||'—',
+            'Purchase Date':_resolveEqDate(e.purchaseDate||e.purchasedate||e.bought||e.buydate||e.date||null),
+            'Notes':_compressNotes(e.notes||'—')
+        }));
+        const eqWs = XLSX.utils.json_to_sheet(eqRows);
+        eqWs['!cols'] = [22,16,10,12,14,40].map(w=>({wch:w}));
+        // Set wrap text on every Notes cell via SheetJS-compatible '!rows' + cell z property
+        const range = XLSX.utils.decode_range(eqWs['!ref']||'A1');
+        if (!eqWs['!rows']) eqWs['!rows'] = [];
+        for (let R = range.s.r + 1; R <= range.e.r; R++) {
+            const cellAddr = XLSX.utils.encode_cell({r:R, c:5});
+            const cell = eqWs[cellAddr];
+            if (cell && typeof cell.v === 'string' && cell.v.includes('\n')) {
+                cell.t = 's';
+                // Force wrap via style — works in xlsx-pro; in community SheetJS the \n already causes wrap on open
+                if (!eqWs['!rows'][R]) eqWs['!rows'][R] = {};
+                eqWs['!rows'][R].hpx = Math.min(20 * Math.ceil(cell.v.split('\n').length * 1.4), 120);
+            }
+        }
+        if (eqRows.length) { XLSX.utils.book_append_sheet(wb, eqWs, 'Equipment'); hasData = true; }
+    }
+
+    if (type==='staff'||type==='all')
+        addSheet('Staff', _fbStaff.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))).map(s=>{
+            const rawJoin = s.joinDate||s.joindate||s.startDate||s.startdate||s.joiningDate||s.joiningdate||'';
+            let joinDateStr = '—';
+            if (rawJoin) {
+                if (typeof rawJoin.toDate === 'function') {
+                    joinDateStr = rawJoin.toDate().toISOString().slice(0,10);
+                } else if (rawJoin instanceof Date) {
+                    joinDateStr = rawJoin.toISOString().slice(0,10);
+                } else {
+                    joinDateStr = normalizeDate(rawJoin) || String(rawJoin);
+                }
+            }
+            return {
+                'Name':s.name||'—',
+                'Role':s.role||s.designation||'—',
+                'Phone':s.phone||s.mobile||'—',
+                'Email':s.email||s.emailAddress||'—',
+                'Salary (₹)':safeNum(s.salary||0),
+                'Join Date':joinDateStr,
+                'Status':s.status||s.employmentStatus||'—'
+            };
+        }), [22,16,14,28,12,12,10]);
+
+    if (type==='fees'||type==='all')
+        addSheet('Fees', _sortByPowerId(_fbFees.map(f=>{
+            const pid = pidOf(f);
+            const memberMap = _getMemberMap();
+            const member = memberMap.get(pid) || {};
+            return {
+                'Power ID':pid||'—',
+                'Name':f.name||member.name||'—',
+                'Package':f.package||member.package||'—',
+                'Amount (₹)':safeNum(f.amount||f.amountPaid||0),
+                'Amount Paid (₹)':safeNum(f.amountPaid||0),
+                'Payment Date':f.paymentDate||f.date||'—',
+                'Status':f.status||'—',
+                'Due Date':f.dueDate||feeDate(f)||'—'
+            };
+        })), [10,22,14,12,14,14,10,12]);
+
+    if (type==='sales'||type==='all')
+        addSheet('Supplement Sales', _fbSales.map(s=>({
+            'Date':s.date||'—','Supplement':s.supplement||s.supplementName||s.name||'—',
+            'Quantity':safeNum(s.quantity||0),'Unit Price (₹)':safeNum(s.unitPrice||0),'Total (₹)':safeNum(s.totalAmount||0)
+        })), [12,22,10,14,12]);
+
+    if (!hasData) { showToast('No data to export for: ' + type, 'error'); return; }
+    const fname = type==='all'
+        ? `GymAdmin_Export_${getLocalDateString()}.xlsx`
+        : `GymAdmin_${type.charAt(0).toUpperCase()+type.slice(1)}_${getLocalDateString()}.xlsx`;
+    XLSX.writeFile(wb, fname);
+    showToast('Exported successfully.', 'success');
+}
+
+// ── Excel Import ──────────────────────────────────────────────
+async function saveToFirestore(colName, records) {
+    let added = 0, skipped = 0;
+    for (const record of records) {
+        try { await addDoc(collection(db, colName), record); added++; }
+        catch (e) { console.error(`addDoc error [${colName}]:`, e); skipped++; }
+    }
+    return { added, skipped };
+}
+
+// Build a dedup key set from Firestore snapshot
+async function _fbKeySet(colName, keyFn) {
+    const snap = await getDocs(collection(db, colName)).catch(() => null);
+    const s = new Set();
+    if (snap) snap.forEach(d => { const k = keyFn(d.data()); if (k) s.add(k); });
+    return s;
+}
+
+async function handleExcelImport(input, forceType) {
+    const file = input.files[0];
+    if (!file) return;
+    const statusEl = document.getElementById('importStatus');
+    statusEl.style.display = 'block';
+    statusEl.style.color   = 'var(--text-muted)';
+    statusEl.textContent   = '⏳ Reading file...';
+
+    const reader = new FileReader();
+    reader.onload = async e => {
+        try {
+            const wb       = XLSX.read(new Uint8Array(e.target.result), { type:'array', cellDates:true });
+            const rows     = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' }).map(normalizeKeys);
+            const imported = [];
+            const now      = new Date().toISOString();
+
+            if (forceType === 'attendance') {
+                const fbKeys = await _fbKeySet(COL.attendance, r => (r.powerId&&r.date) ? `${r.powerId}|${r.date}` : null);
+                const seen   = new Set(fbKeys);
+                const toInsert = [];
+                for (const r of rows) {
+                    const powerId = String(pick(r,'powerid','power id','memberid','member id','id')||'').trim();
+                    const date    = normalizeDate(pick(r,'date','attendancedate','datetime'));
+                    if (!powerId||!date) continue;
+                    const key = `${powerId}|${date}`;
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    toInsert.push({
+                        powerId,
+                        name:   String(pick(r,'name','membername','member name')||'').trim(),
+                        date,
+                        status: String(pick(r,'status','attendancestatus')||'present').toLowerCase().trim(),
+                        time:   String(pick(r,'time','checkintime','intime')||'').trim()
+                    });
+                }
+                const res = await saveToFirestore(COL.attendance, toInsert);
+                imported.push(`✅ attendance: ${res.added} added → Firebase`);
+
+            } else if (forceType === 'members') {
+                const fbMemberIds = await _fbKeySet(COL.members, r => r.powerId ? String(r.powerId).trim() : null);
+                const fbFeeKeys   = await _fbKeySet(COL.fees, r => (r.powerId&&r.paymentDate) ? `${r.powerId}|${r.paymentDate}` : null);
+                const seenM = new Set(fbMemberIds), seenF = new Set(fbFeeKeys);
+                const newMembers = [], newFees = [];
+                for (const r of rows) {
+                    const powerId        = String(pick(r,'powerid','power id','memberid','member id','id')||'').trim();
+                    const name           = String(pick(r,'name','membername','member name','fullname')||'').trim();
+                    if (!powerId||!name) continue;
+                    const phone          = String(pick(r,'phone','mobile','contact','phonenumber')||'').trim();
+                    const email          = String(pick(r,'email','emailaddress','e-mail')||'').trim();
+                    const pkg            = String(pick(r,'package','plan','membership','packagename')||'').trim();
+                    const fitnessGoal    = String(pick(r,'fitnessgoal','fitness goal','goal')||'').trim();
+                    const status         = String(pick(r,'status','memberstatus')||'active').toLowerCase().trim();
+                    const joinDate       = normalizeDate(pick(r,'joindate','joined','join date','startdate','start date'));
+                    const membershipDays = safeNum(pick(r,'membershipdays','membership days','duration','days'));
+                    const feeAmount      = safeNum(pick(r,'fee','fees','amount','monthlyfee','monthly fee'));
+                    const lastPayment    = normalizeDate(pick(r,'lastpayment','last payment','lastpaid','paiddate','paid date'));
+                    if (!seenM.has(powerId)) {
+                        newMembers.push({ powerId,name,phone,email,package:pkg,fitnessGoal,status,joinDate,membershipDays,fee:feeAmount });
+                        seenM.add(powerId);
+                    }
+                    if (feeAmount>0||lastPayment) {
+                        const pd     = lastPayment || getLocalDateString();
+                        const feeKey = `${powerId}|${pd}`;
+                        if (!seenF.has(feeKey)) {
+                            newFees.push({ powerId,name,amount:feeAmount,paymentDate:pd,package:pkg,status:'paid' });
+                            seenF.add(feeKey);
+                        }
+                    }
+                }
+                const mRes = await saveToFirestore(COL.members, newMembers);
+                const fRes = await saveToFirestore(COL.fees, newFees);
+                imported.push(`✅ members: ${mRes.added} added → Firebase`);
+                if (newFees.length) imported.push(`✅ fees: ${fRes.added} added → Firebase`);
+
+            } else if (forceType === 'supplements') {
+                const toInsert = [];
+                for (const r of rows) {
+                    const name = String(pick(r,'name','supplement','supplementname','product')||'').trim();
+                    if (!name) continue;
+                    toInsert.push({
+                        name,
+                        brand: String(pick(r,'brand','brandname','company')||'').trim(),
+                        price: safeNum(pick(r,'price','rate','cost','mrp')),
+                        stock: safeNum(pick(r,'stock','quantity','qty','units')),
+                        importedAt: now
+                    });
+                }
+                const res = await saveToFirestore(COL.supplements, toInsert);
+                imported.push(`✅ supplements: ${res.added} added → Firebase`);
+
+            } else if (forceType === 'equipment') {
+                const toInsert = [];
+                for (const r of rows) {
+                    const name = String(pick(r,'name','equipment','equipmentname','machine')||'').trim();
+                    if (!name) continue;
+                    toInsert.push({
+                        name,
+                        category:     String(pick(r,'category','type','equipmenttype')||'').trim(),
+                        quantity:     safeNum(pick(r,'quantity','qty','count','units')),
+                        condition:    String(pick(r,'condition','status','state')||'').trim(),
+                        purchaseDate: normalizeDate(pick(r,'purchasedate','purchase date','bought','buydate','date')),
+                        notes:        String(pick(r,'notes','remarks','description','comment')||'').trim(),
+                        importedAt:   now
+                    });
+                }
+                const res = await saveToFirestore(COL.equipment, toInsert);
+                imported.push(`✅ equipment: ${res.added} added → Firebase`);
+
+            } else if (forceType === 'sales') {
+                const toInsert = [];
+                for (const r of rows) {
+                    const supplement = String(pick(r,'supplement','supplementname','supplement name','product','name','item')||'').trim();
+                    if (!supplement) continue;
+                    const quantity   = safeNum(pick(r,'quantity','qty','units','sold'));
+                    const unitPrice  = safeNum(pick(r,'unitprice','unit price','price','rate','perprice'));
+                    const total      = safeNum(pick(r,'totalamount','total amount','total','amount'));
+                    toInsert.push({
+                        date:        normalizeDate(pick(r,'date','saledate','sale date','orderdate')) || getLocalDateString(),
+                        supplement,
+                        quantity,
+                        unitPrice,
+                        totalAmount: total || (quantity * unitPrice),
+                        importedAt:  now
+                    });
+                }
+                // Sales go to canonical collection only
+                const res = await saveToFirestore(COL.sales, toInsert);
+                imported.push(`✅ supplement sales: ${res.added} added → Firebase (supplement_sales)`);
+
+            } else if (forceType === 'staff') {
+                const fbKeys = await _fbKeySet(COL.staff, r => `${(r.name||'').toLowerCase()}|${r.phone||r.mobile||''}`);
+                const seen   = new Set(fbKeys);
+                const toInsert = [];
+                for (const r of rows) {
+                    const name  = String(pick(r,'name','staffname','staff name','fullname','employee')||'').trim();
+                    if (!name) continue;
+                    const phone = String(pick(r,'phone','mobile','contact','phonenumber','phone number')||'').trim();
+                    const key   = `${name.toLowerCase()}|${phone}`;
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    toInsert.push({
+                        name, phone,
+                        role:      String(pick(r,'role','designation','position','title','jobtitle','job title')||'').trim(),
+                        email:     String(pick(r,'email','emailaddress','e-mail')||'').trim(),
+                        salary:    safeNum(pick(r,'salary','pay','wage','monthlysalary','monthly salary')),
+                        joinDate:  normalizeDate(pick(r,'joindate','join date','joiningdate','startdate','start date','joined')),
+                        status:    String(pick(r,'status','employmentstatus')||'active').trim(),
+                        importedAt: now
+                    });
+                }
+                const res = await saveToFirestore(COL.staff, toInsert);
+                imported.push(`✅ staff: ${res.added} added → Firebase`);
+            }
+
+            statusEl.style.color = imported.length ? 'var(--success)' : 'var(--danger)';
+            statusEl.textContent = imported.length ? imported.join(' | ') : '❌ No matching data found.';
+            showToast(imported.length ? 'Import successful!' : 'No data imported.', imported.length ? 'success' : 'error');
+        } catch (err) {
+            console.error('Import error:', err);
+            statusEl.style.color = 'var(--danger)';
+            statusEl.textContent = '❌ Error: ' + err.message;
+            showToast('Import failed. Check file format.', 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+    input.value = '';
+}
+
+// ── Data Status ───────────────────────────────────────────────
+function updateDataStatus() {
+    const counts = {
+        members: _fbMembers.length, attendance: _fbAttendance.length, fees: _fbFees.length,
+        staff: _fbStaff.length, supplements: _fbSupplements.length, equipment: _fbEquipment.length,
+        sales: _fbSales.length
+    };
+    document.getElementById('dataStatusList').innerHTML = Object.entries(counts).map(([t, n]) =>
+        `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span style="text-transform:capitalize;">${t}</span>
+            <span style="color:${n>0?'var(--success)':'var(--text-muted)'};font-weight:600;">${n} records</span>
+        </div>`
+    ).join('');
+}
+
+function clearAllData() {
+    if (!confirm('Clear ALL stored data? This cannot be undone.')) return;
+    showToast('Use Firebase console to delete records directly.', 'error');
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+let _toastTimer = null;
+function showToast(msg, type) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.className = 'toast show ' + (type || '');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ── Global Refresh ────────────────────────────────────────────
+function refreshAll() {
+    _recomputeDashboard();
+    updateDataStatus();
+    loadTodayPresentFromFirebase();
+}
+
+// ── Expose globals ────────────────────────────────────────────
+Object.assign(window, {
+    refreshAll, updateDashboard: _recomputeDashboard, updateDataStatus,
+    handleExcelImport, exportData, exportDailyAttendance, exportMonthlyAttendance,
+    exportFeesPending,
+    clearAllData, showToast
+});
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const now  = new Date();
+    const yyyy = now.getFullYear();
+    const mm   = String(now.getMonth() + 1).padStart(2, '0');
+    const dd   = String(now.getDate()).padStart(2, '0');
+    const set  = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    set('exportDailyDate',   `${yyyy}-${mm}-${dd}`);
+    set('exportMonthlyMonth',`${yyyy}-${mm}`);
+    _applySettingsToUI();       // show cached settings instantly
+    _subscribeSettings();       // subscribe for live cross-device sync
+    syncFromFirebase();         // attach all collection onSnapshot listeners
+});
+</script>
+</body>
+</html>
